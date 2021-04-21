@@ -1,3 +1,17 @@
 # Reinforcement-Learning-Project
 
-testing slack integration12 3 4
+
+
+
+## Project Objective
+
+Use Deep Reinforcement learning to “learn” the optimal input current profiles which maximizes the Fisher-Information for certain SPMe battery Parameters. 
+
+
+
+## OpenAI Gym (RL Testing Framework)
+
+
+
+
+## StableBaselines3 ( PyTorch based DRL algorithms) 
