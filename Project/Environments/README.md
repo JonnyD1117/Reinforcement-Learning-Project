@@ -18,12 +18,13 @@ To install GYM run the following code in your terminal
  PyTorch is a Neural Network and Automatic Differentiation frame (started by Facebook) which is opensource and is a industry standard machine learning framework (besides Tensorflow2.0 -> Google) for creating and training neural networks. When implementing deep reinforcement learning environments, most DRL libraries will be built ontop of either PyTorch or Tensorflow2.0, since most of these algorithms require the implementation of neural networks as function approximators. 
  
  To install PyTorch, please follow the following link and follow the given instructions and spec the specifications which fit your computer specifications. 
+ [PyTorch Download/Install](https://pytorch.org/)
 
 ## Stable-Baselines3 (Stable & Optimized DRL algorithms) 
 
 StableBaselines3 is a library which using *PyTorch* as the backend for implementing deep reinforcement learning algorithms. These algorithms are very stable, have been optimized, and are fully featured with a host of capabilities not available in the vanilla version of these algorithms. 
 
-[PyTorch Download/Install](https://pytorch.org/)
+
 
 To install this package, run the following code... 
 
