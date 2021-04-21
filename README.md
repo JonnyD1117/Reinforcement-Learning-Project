@@ -11,6 +11,7 @@ Use Deep Reinforcement learning to “learn” the optimal input current profile
  * OpenAI GYM 
  * Stable-Baslines3 
  * PyTorch 
+ * Tensorboard
  * Numpy 
  * Matplotlib
 
