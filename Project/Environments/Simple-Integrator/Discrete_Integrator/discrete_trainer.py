@@ -10,15 +10,20 @@ if __name__ == '__main__':
 
     env = DiscreteSimpleSOC()
 
-    model = DQN(MlpPolicy, env, verbose=1)
+    model = DQN(MlpPolicy, env, verbose=1, exploration_final_eps=.2)
     # model = DQN.load("./model/dqn_simp_integrator_with_SOC_penalty_no_soc_range_5_uniform_extended")
+
+    # model.load("./model/dqn_simp_integrator_with_SOC_penalty_soc_range_point65_point85_uniform_extended_T19")
+
     # model.learn(total_timesteps=2500000)
     # model.learn(total_timesteps=1000000)
     model.learn(total_timesteps=500000)
 
     # model.learn(total_timesteps=100000)
 
-    model.save("./model/dqn_simp_integrator_with_SOC_penalty_soc_range_point65_point85_uniform_extended_T15")
+    # model.save("./model/dqn_simp_integrator_with_SOC_penalty_soc_range_point65_point85_uniform_extended_2T19")
+    # model.save("./model/NO_TRAINING_BASELINE_T10")    REPEAT_1T1
+    # model.save("./model/REPEAT_1T3_5")
 
     # model = DQN.load("./log_files/models/dqn_simp_integrator_with_SOC_penalty_soc_range_point55_point85_uniform_extended")
 

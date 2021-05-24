@@ -20,8 +20,6 @@ def increment_mean(new_value, prev_mean, mean_counter):
 
 class SPMenv(gym.Env):
 
-    # metadata = {'render.modes': ['human']}
-
     def __init__(self, time_step=1, training_duration=1800, log_data=True, SOC=.5):
         # super(SingleParticleModelElectrolyte_w_Sensitivity).__init__()
 
@@ -34,9 +32,7 @@ class SPMenv(gym.Env):
         self.log_state = log_data
 
         if self.log_state is True:
-            self.writer = SummaryWriter('./Temp_Logs/Discrete_attempt_4/run6')
-
-
+            self.writer = SummaryWriter('./Temp_Logs/Discrete_attempt_1')
 
         self.soc_list = []
 
@@ -48,7 +44,8 @@ class SPMenv(gym.Env):
         self.step_counter = 0
         self.SPMe = SingleParticleModelElectrolyte_w_Sensitivity(timestep=self.time_step, init_soc=SOC)
 
-        state_limits = np.array([np.inf], dtype=np.float32)
+        upper_state_limits = np.array([np.inf, np.inf], dtype=np.float32)
+        lower_state_limits = np.array([-np.inf, 0], dtype=np.float32)
         max_C_val = np.array([25.67*1], dtype=np.float32)
 
         self.SOC_0 = SOC
@@ -66,7 +63,7 @@ class SPMenv(gym.Env):
 
         self.action_space = spaces.Discrete(3)
         self.action_dict = {0: 1.0*max_C_val, 1: np.array([0.0], dtype=np.float32), 2: -1.0*max_C_val}
-        self.observation_space = spaces.Box(-state_limits, state_limits, dtype=np.float32)
+        self.observation_space = spaces.Box(-lower_state_limits, upper_state_limits, dtype=np.float32)
 
         self.seed()
         self.viewer = None
@@ -87,9 +84,13 @@ class SPMenv(gym.Env):
         self.tb_state_of_charge = SOC
         self.tb_state_of_charge_1 = SOC
         self.tb_term_volt = None
+
         self.tb_reward_list = []
-        self.tb_reward_mean = None
-        self.tb_instantaneous_reward = None
+        self.cumulative_reward = 0
+        self.tb_reward_mean = 0
+        self.tb_reward_mean_counter = 1
+        self.tb_reward_sum = 0
+        self.tb_instantaneous_reward = 0
 
         self.rec_epsi_sp = []
         self.rec_input_current = []
@@ -133,8 +134,8 @@ class SPMenv(gym.Env):
         dCse_dEpsi_sp = sen_out["dCse_dEpsi_sp"]
         dCse_dEpsi_sn = sen_out["dCse_dEpsi_sn"]
 
-        # return [yp.item(), dV_dEpsi_sp.item()]
-        return [ dCse_dEpsi_sp.item()]
+        return [dV_dEpsi_sp.item()]
+        # return [ dCse_dEpsi_sp.item()]
 
     def get_time(self):
         total_time = self.time_step*self.time_horizon_counter
@@ -148,12 +149,12 @@ class SPMenv(gym.Env):
         # else:
         #     reward = -1
 
-        if Cse_val <= Cse_threshold and Cse_val >.7:
-            reward = 10
-        else:
-            reward = -1
+        # if Cse_val <= Cse_threshold and Cse_val >.7:
+        #     reward = 10
+        # else:
+        #     reward = -1
 
-        # reward = sensitivity_value**2
+        reward = sensitivity_value**2
 
         # reward = sum(self.sen_sqr_list)
         return reward
@@ -161,14 +162,6 @@ class SPMenv(gym.Env):
     def step(self, action):
         # err_msg = "%r (%s) invalid" % (action, type(action))
         # assert self.action_space.contains(action), err_msg
-        # print("action", action)
-
-        act_1 = self.action_dict[0]
-        act_2 = self.action_dict[1]
-        act_3 = self.action_dict[2]
-
-
-        # print(f"Actions: Act1 {act_1}, Act2 {act_2}, Act3 {act_3}")
 
         action = action.item()
 
@@ -199,6 +192,7 @@ class SPMenv(gym.Env):
         self.state_of_charge = soc_new[1].item()
         self.state_output = outputs
         self.state = self.unpack_states(bat_states, new_sen_states, outputs, sensitivity_outputs)
+        self.state.append(self.remaining_time)
 
         # Set Key System Variables
         self.epsi_sp = sensitivity_outputs['dV_dEpsi_sp']
@@ -211,21 +205,19 @@ class SPMenv(gym.Env):
         concentration_pos = self.state_output['yp'] 
         concentration_neg = self.state_output['yn']
 
+        self.remaining_time -= self.dt
+
+
         done = bool(self.time_horizon_counter >= self.training_duration
                     or np.isnan(V_term)
                     or done_flag is True)
 
         if not done:
-            # reward = self.reward_function(self.epsi_sp.item(), action)
-            # reward = self.reward_function(self.epsi_sp.item(), action)
-
             reward = self.reward_function(self.epsi_sp.item(), action, soc_new[0].item(), Cse_threshold=.8)
 
         elif self.steps_beyond_done is None:
             self.steps_beyond_done = 0
-            # reward = self.reward_function(self.epsi_sp.item(), action)
-            # reward = self.reward_function(self.epsi_sp.item(), action)
-            reward = self.reward_function(self.epsi_sp.item(), action, soc_new[0].item(),Cse_threshold=.8)
+            reward = self.reward_function(self.epsi_sp.item(), action, soc_new[0].item(), Cse_threshold=.8)
 
         else:
             if self.steps_beyond_done == 0:
@@ -247,22 +239,26 @@ class SPMenv(gym.Env):
 
         self.tb_term_volt = self.term_volt
         self.tb_input_current = input_current
+
         self.tb_instantaneous_reward = reward
-        self.tb_reward_list.append(reward)
-        self.tb_reward_mean = np.mean(self.tb_reward_list)
+        self.tb_reward_mean = increment_mean(reward, self.tb_reward_mean, self.tb_reward_mean_counter)
+        self.tb_reward_mean_counter += 1
+        self.tb_reward_sum += reward
 
         if self.log_state is True:
 
             self.writer.add_scalar('Battery/C_se0', self.tb_C_se0, self.global_counter)
-            self.writer.add_scalar('Battery/C_se1', self.tb_C_se1,self.global_counter)
-            self.writer.add_scalar('Battery/Epsi_sp', self.tb_epsi_sp,self.global_counter)
-            self.writer.add_scalar('Battery/SOC', self.tb_state_of_charge,self.global_counter)
-            self.writer.add_scalar('Battery/SOC_1', self.tb_state_of_charge_1,self.global_counter)
+            self.writer.add_scalar('Battery/C_se1', self.tb_C_se1, self.global_counter)
+            self.writer.add_scalar('Battery/Epsi_sp', self.tb_epsi_sp, self.global_counter)
+            self.writer.add_scalar('Battery/SOC', self.tb_state_of_charge, self.global_counter)
+            self.writer.add_scalar('Battery/SOC_1', self.tb_state_of_charge_1, self.global_counter)
 
-            self.writer.add_scalar('Battery/Term_Voltage', self.tb_term_volt,self.global_counter)
-            self.writer.add_scalar('Battery/Input_Current', self.tb_input_current,self.global_counter)
-            self.writer.add_scalar('Battery/Instant Reward', self.tb_instantaneous_reward,self.global_counter)
-            self.writer.add_scalar('Battery/Cum. Reward', self.tb_reward_mean, self.global_counter)
+            self.writer.add_scalar('Battery/Term_Voltage', self.tb_term_volt, self.global_counter)
+            self.writer.add_scalar('Battery/Input_Current', self.tb_input_current, self.global_counter)
+            self.writer.add_scalar('Battery/Instant Reward', self.tb_instantaneous_reward, self.global_counter)
+
+            self.writer.add_scalar('Battery/Cum. Reward', self.tb_reward_sum, self.global_counter)
+            self.writer.add_scalar('Battery/Avg. Reward', self.tb_reward_mean, self.global_counter)
             self.writer.add_scalar('Battery/Num. Episodes', self.episode_counter, self.global_counter)
 
 
@@ -283,17 +279,20 @@ class SPMenv(gym.Env):
         self.time_horizon_counter = 0
         self.episode_counter += 1
         # print("RESET CALLED")
-        self.state = None
 
         self. sen_sqr_list = []
         self.sen_list = []
+
+        self.remaining_time = self.training_duration
+
+        self.state = None
+
 
         # state_noise = np.random.normal(loc=.125, scale=1)
 
         if test_flag is True:
             self.state_of_charge = self.SOC_0
             self.SPMe.__init__(init_soc=self.SOC_0)
-            print("TEXTING BITCH")
 
         else:
 
@@ -316,6 +315,7 @@ class SPMenv(gym.Env):
 
         self.steps_beyond_done = None
         return np.array(self.state)
+
 
 if __name__ == '__main__':
 

@@ -5,28 +5,18 @@ import matplotlib.pyplot as plt
 # Added this to the Time Based Simulation
 
 from stable_baselines3 import PPO, TD3, DDPG, DQN
-from stable_baselines3.common.vec_env.vec_check_nan import VecCheckNan
-from stable_baselines3.common.env_checker import check_env
-from stable_baselines3.common.cmd_util import make_vec_env
-# from stable_baselines3.common.utils import set_random_seed
-# from stable_baselines3.common.vec_env import DummyVecEnv
-from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.callbacks import BaseCallback
-
-from stable_baselines3.common.evaluation import evaluate_policy
-from stable_baselines3.td3.policies import MlpPolicy
-from stable_baselines3.ddpg.policies import MlpPolicy
 from stable_baselines3.dqn.policies import MlpPolicy
 
 from stable_baselines3.common.noise import NormalActionNoise
-
-# import wandb
+from Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
 
 
 if __name__ == '__main__':
     # Instantiate Environment
-    env_id = 'gym_spm_morestates_discrete_action:spm_morestates_discrete_action-v0'
-    env = gym.make('gym_spm_morestates_discrete_action:spm_morestates_discrete_action-v0')
+    # env_id = 'gym_spm_morestates_discrete_action:spm_morestates_discrete_action-v0'
+    # env = gym.make('gym_spm_morestates_discrete_action:spm_morestates_discrete_action-v0')
+
+    env = Discrete_SPMe_env()
 
     print(env)
 
@@ -37,24 +27,15 @@ if __name__ == '__main__':
     model_path = "./Model/" + model_name
 
     # Instantiate Model
-    # n_actions = env.action_space.shape[-1]
-    n_actions = env.action_space
-
-    print(n_actions)
-    # action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=.75 * np.ones(n_actions))
-    # model = DDPG(MlpPolicy, env, action_noise=action_noise, verbose=1, train_freq=25000, n_episodes_rollout=-1)
-    # model = DDPG(MlpPolicy, env, verbose=1, train_freq=2500, n_episodes_rollout=-1)
-
     model = DQN(MlpPolicy, env, verbose=1)
 
-    # wandb.watch(model)
-
-
     # Train OR Load Model
-    model.learn(total_timesteps=250000)
+    model.learn(total_timesteps=1000000)
+
+    print("TRAINING is OVER")
     env.log_state = False
 
-    model.save(model_path)
+    # model.save(model_path)
 
     # model = DQN.load(model_path)
 
@@ -76,9 +57,7 @@ if __name__ == '__main__':
     obs = env.reset(test_flag= True)
     for _ in range(3600):
 
-        action, _states = model.predict(obs)
-
-
+        action, _states = model.predict(obs, deterministic=True)
 
         obs, rewards, done, info = env.step(action)
 
