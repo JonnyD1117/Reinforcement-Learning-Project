@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 
 # Added this to the Time Based Simulation
 
-from stable_baselines3 import PPO, TD3, DDPG, DQN
+# from stable_baselines3 import PPO, TD3, DDPG, DQN
+from stable_baselines3 import PPO, TD3, DQN
 from stable_baselines3.dqn.policies import MlpPolicy
 
 from stable_baselines3.common.noise import NormalActionNoise
@@ -18,19 +19,17 @@ if __name__ == '__main__':
 
     env = Discrete_SPMe_env()
 
-    print(env)
-
     # HyperParameters
     lr = 3e-4
 
-    model_name = "DQN_0_7Million.pt"
-    model_path = "./Model/" + model_name
+    model_name = "DQN_Log_Var_Testing.pt"
+    model_path = "./DQN_Log_Var_Testing/model/" + model_name
 
     # Instantiate Model
-    model = DQN(MlpPolicy, env, verbose=1)
+    model = DQN(MlpPolicy, env, verbose=1, exploration_fraction=.99)
 
     # Train OR Load Model
-    model.learn(total_timesteps=7000000)
+    model.learn(total_timesteps=100000)
 
     print("TRAINING is OVER")
     env.log_state = False
@@ -71,7 +70,7 @@ if __name__ == '__main__':
 
     plt.figure()
     plt.plot(soc_list)
-    plt.title("State of Charge - DQN (SOC Reward Thresh: [.8-85])")
+    plt.title("State of Charge")
     plt.show()
 
     plt.figure()
