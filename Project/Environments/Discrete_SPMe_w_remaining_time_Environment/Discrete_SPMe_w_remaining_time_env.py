@@ -32,7 +32,7 @@ class SPMenv(gym.Env):
         self.log_state = log_data
 
         if self.log_state is True:
-            self.writer = SummaryWriter('./Temp_Logs/Discrete_attempt_1')
+            self.writer = SummaryWriter('./Temp_Logs/DQN_0_7Million')
 
         self.soc_list = []
 
@@ -135,8 +135,7 @@ class SPMenv(gym.Env):
         dCse_dEpsi_sp = sen_out["dCse_dEpsi_sp"]
         dCse_dEpsi_sn = sen_out["dCse_dEpsi_sn"]
 
-        return [dV_dEpsi_sp.item()]
-        # return [ dCse_dEpsi_sp.item()]
+        return [ dCse_dEpsi_sp.item()]
 
     def get_time(self):
         total_time = self.time_step*self.time_horizon_counter

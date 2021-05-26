@@ -23,19 +23,19 @@ if __name__ == '__main__':
     # HyperParameters
     lr = 3e-4
 
-    model_name = "DQN_2_p5.pt"
+    model_name = "DQN_0_7Million.pt"
     model_path = "./Model/" + model_name
 
     # Instantiate Model
     model = DQN(MlpPolicy, env, verbose=1)
 
     # Train OR Load Model
-    model.learn(total_timesteps=1000000)
+    model.learn(total_timesteps=7000000)
 
     print("TRAINING is OVER")
     env.log_state = False
 
-    # model.save(model_path)
+    model.save(model_path)
 
     # model = DQN.load(model_path)
 

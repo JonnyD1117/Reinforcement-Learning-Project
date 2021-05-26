@@ -1,0 +1,13 @@
+Temp_Logs/**
+*/.idea/*
+*/__pycache__
+events.*
+*.xml
+Log_Files/** 
+Model/**
+model/**
+*.jpg
+*.png
+*.pt
+*.pth
+*.xlsx
