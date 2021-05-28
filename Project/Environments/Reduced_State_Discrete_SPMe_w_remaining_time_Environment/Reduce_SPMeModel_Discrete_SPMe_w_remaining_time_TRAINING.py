@@ -9,7 +9,7 @@ from stable_baselines3 import PPO, TD3, DQN
 from stable_baselines3.dqn.policies import MlpPolicy
 
 from stable_baselines3.common.noise import NormalActionNoise
-from Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
+from Reduce_SPMeModel_Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
 
 
 if __name__ == '__main__':
@@ -18,24 +18,21 @@ if __name__ == '__main__':
     # env = gym.make('gym_spm_morestates_discrete_action:spm_morestates_discrete_action-v0')
 
     logging_dir_name = "dCse_dEps_Training"
-    trial_name = "T_1_1_4"
+    trial_name = "T_1_1_2"
 
     env = Discrete_SPMe_env(log_dir=logging_dir_name, log_trial_name=trial_name)
 
     # HyperParameters
     lr = 3e-4
 
-    lr = 0.218
-    ef = 0.6827
-
     model_name = f"{trial_name}.pt"
     model_path = f"./{logging_dir_name}/model/" + model_name
 
     # Instantiate Model
-    model = DQN(MlpPolicy, env, verbose=1, exploration_fraction=ef, learning_rate=lr)
+    model = DQN(MlpPolicy, env, verbose=1, exploration_fraction=.99)
 
     # Train OR Load Model
-    model.learn(total_timesteps=10000)
+    model.learn(total_timesteps=15000000)
 
     print("TRAINING is OVER")
     env.log_state = False

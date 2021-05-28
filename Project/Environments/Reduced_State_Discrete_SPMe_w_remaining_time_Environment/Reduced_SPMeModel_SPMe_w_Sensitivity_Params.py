@@ -5,7 +5,7 @@ from math import asinh, tanh, cosh
 from SPMe_Baseline_Params import SPMe_Baseline_Parameters
 
 
-class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
+class Reduced_SPMeModel_SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
     def __init__(self, init_soc=.5, custom_params=None, timestep=1, sim_time=3600, voltage_limiter=True):
 
         # print("Battery model CLASS Init Called")
@@ -601,12 +601,13 @@ class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
         Jp = -I / Vp
 
         if Jn == 0:
+            # print("Molar Current Density (Jn) is equal to zero. This causes 'division by zero' later")
+            # print("I", I)
+
             I = .00000001
 
             Jn = I / Vn
             Jp = -I / Vp
-            # print("Molar Current Density (Jn) is equal to zero. This causes 'division by zero' later")
-            # print("I", I)
 
         # Compute "current timestep" Concentration from "Battery States" via Output Eqn (Pos & Neg)
         yn_new = C_dn @ xn_old + D_dn * 0
@@ -720,7 +721,7 @@ class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
 
 if __name__ == "__main__":
 
-    SPMe = SingleParticleModelElectrolyte_w_Sensitivity(sim_time=1300, init_soc=0)
+    SPMe = Reduced_SPMeModel_SingleParticleModelElectrolyte_w_Sensitivity(sim_time=1300, init_soc=0)
 
     [xn, xp, xe, yn, yp, yep, theta_n, theta_p, docv_dCse_n, docv_dCse_p, V_term,
      time, current, soc, dV_dDsn, dV_dDsp, dCse_dDsn, dCse_dDsp, dV_dEpsi_sn, dV_dEpsi_sp]\

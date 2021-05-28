@@ -5,6 +5,10 @@ from gym.utils import seeding
 import numpy as np
 import random
 from torch.utils.tensorboard import SummaryWriter
+import logging
+import time
+
+
 
 
 def increment_mean(new_value, prev_mean, mean_counter):
@@ -20,7 +24,7 @@ def increment_mean(new_value, prev_mean, mean_counter):
 
 class SPMenv(gym.Env):
 
-    def __init__(self, time_step=1, training_duration=1800, log_data=True, SOC=.5):
+    def __init__(self, time_step=1, training_duration=1800, log_dir=None, log_trial_name=None,log_data=True, SOC=.5):
         # super(SingleParticleModelElectrolyte_w_Sensitivity).__init__()
 
         self.global_counter = 0
@@ -32,7 +36,17 @@ class SPMenv(gym.Env):
         self.log_state = log_data
 
         if self.log_state is True:
-            self.writer = SummaryWriter('./DQN_Log_Var_Testing/log_files/DQN_Log_Var_Testing')
+            if log_dir is None:
+                print("NO Logging Directory Name Given")
+                exit()
+
+            elif log_trial_name is None:
+                print("NO Logging Trial Name Given")
+                exit()
+
+            else:
+                self.writer = SummaryWriter(f'./{log_dir}/log_files/{log_trial_name}')
+                logging.basicConfig(filename=f'./{log_dir}/log_files/{log_trial_name}/{log_trial_name}.log', level=logging.INFO)
 
         self.soc_list = []
 
@@ -41,6 +55,7 @@ class SPMenv(gym.Env):
 
         self.max_sen = 0
         self.time_step = time_step
+        self.start_time = time.ctime(time.time())
         self.dt = 1
         self.step_counter = 0
         self.SPMe = SingleParticleModelElectrolyte_w_Sensitivity(timestep=self.time_step, init_soc=SOC)
@@ -64,7 +79,7 @@ class SPMenv(gym.Env):
 
         self.action_space = spaces.Discrete(3)
         self.action_dict = {0: 1.0*max_C_val, 1: np.array([0.0], dtype=np.float32), 2: -1.0*max_C_val}
-        self.observation_space = spaces.Box(-lower_state_limits, upper_state_limits, dtype=np.float32)
+        self.observation_space = spaces.Box(lower_state_limits, upper_state_limits, dtype=np.float32)
 
         self.seed()
         self.viewer = None
@@ -257,7 +272,11 @@ class SPMenv(gym.Env):
             self.writer.add_scalar('Battery/Avg. Reward', self.tb_reward_mean, self.global_counter)
             self.writer.add_scalar('Battery/Num. Episodes', self.episode_counter, self.global_counter)
 
+            if self.global_counter == 50000 or self.global_counter % 1000000 == 0:
+                import time
+                current_time = time.ctime(time.time())
 
+                logging.info(f"Current TimeStep: {self.global_counter},  Start Time: {self.start_time}, Current Time: {current_time}")
 
         self.rec_epsi_sp.append(self.tb_epsi_sp.item())
         self.rec_input_current.append(self.tb_input_current)

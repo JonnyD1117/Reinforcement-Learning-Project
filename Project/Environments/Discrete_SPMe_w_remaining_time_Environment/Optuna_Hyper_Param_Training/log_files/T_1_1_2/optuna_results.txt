@@ -1,0 +1,7 @@
+
+
+Training Length = 3Million
+Training Reps = 8
+
+[I 2021-05-27 08:58:12,329] Trial 7 finished with value: 0.1854281001865894 and parameters: {'learning_rate': 0.21834722985303834, 'exploration_fraction': 0.6690562823127237}. Best is trial 1 with value: 0.1854281001865894.
+{'learning_rate': 0.2181284520784038, 'exploration_fraction': 0.6827537181299039}

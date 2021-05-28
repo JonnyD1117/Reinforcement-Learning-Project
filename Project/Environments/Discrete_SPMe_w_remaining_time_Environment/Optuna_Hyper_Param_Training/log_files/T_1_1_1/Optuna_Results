@@ -1,0 +1,2 @@
+[I 2021-05-26 21:20:58,213] Trial 9 finished with value: 5.364463954137617e-20 and parameters: {'learning_rate': 0.1685053232130594, 'exploration_fraction': 0.7544724577139945}. Best is trial 0 with value: 0.1854281001865894.
+{'learning_rate': 0.4976507238001122, 'exploration_fraction': 0.8309069598950967}
