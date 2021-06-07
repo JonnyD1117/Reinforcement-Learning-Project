@@ -9,7 +9,7 @@ from stable_baselines3 import PPO, TD3, DQN
 from stable_baselines3.dqn.policies import MlpPolicy
 
 from stable_baselines3.common.noise import NormalActionNoise
-from Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
+from PM_3C_Large_Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
 
 
 if __name__ == '__main__':
@@ -17,13 +17,15 @@ if __name__ == '__main__':
     # env_id = 'gym_spm_morestates_discrete_action:spm_morestates_discrete_action-v0'
     # env = gym.make('gym_spm_morestates_discrete_action:spm_morestates_discrete_action-v0')
 
-    logging_dir_name = "dCse_dEps_Training"
-    trial_name = "T_1_1_5_lr_neg3e4_ef_p1"
+    logging_dir_name = "PM_3C_Large_D_SPMe_action_space_3_1_n3"
+    trial_name = "T_3_1_2"
 
     env = Discrete_SPMe_env(log_dir=logging_dir_name, log_trial_name=trial_name)
 
     # HyperParameters
     lr = 3e-4
+
+    lr = .1
 
     # lr = 0.218
     # ef = 0.6827
@@ -36,7 +38,7 @@ if __name__ == '__main__':
     model = DQN(MlpPolicy, env, verbose=1, exploration_fraction=ef, learning_rate=lr)
 
     # Train OR Load Model
-    model.learn(total_timesteps=50000000)
+    model.learn(total_timesteps=10000000)
 
     print("TRAINING is OVER")
     env.log_state = False
@@ -58,7 +60,10 @@ if __name__ == '__main__':
     Concentration_list = []
     Concentration_list1 = []
     max_C_val = np.array([25.67 * 1], dtype=np.float32)
-    action_dict = {0: 1.0 * max_C_val, 1: 0., 2: -1.0 * max_C_val}
+    # action_dict = {0: 1.0 * max_C_val, 1: 0., 2: -1.0 * max_C_val}
+
+    action_list_index = np.arange(-3, 3, 1)
+    action_dict = {index: value * max_C_val for index, value in enumerate(action_list_index)}
 
     obs = env.reset(test_flag= True)
     for _ in range(3600):

@@ -5,7 +5,7 @@ from math import asinh, tanh, cosh
 from SPMe_Baseline_Params import SPMe_Baseline_Parameters
 
 
-class Reduced_SPMeModel_SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
+class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
     def __init__(self, init_soc=.5, custom_params=None, timestep=1, sim_time=3600, voltage_limiter=True):
 
         # print("Battery model CLASS Init Called")
@@ -419,6 +419,7 @@ class Reduced_SPMeModel_SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseli
         dCse_dEpsi_sp = -1. * out_Sepsi_p * self.param['epsi_n']
         dCse_dEpsi_sn = out_Sepsi_n * self.param['epsi_n']          # Espi_N and Epsi_p have the same value, Epsi_p currently not defined
 
+
         new_sen_states = {"Sepsi_p": Sepsi_p_new, "Sepsi_n": Sepsi_n_new, "Sdsp_p": Sdsp_p_new, "Sdsn_n": Sdsn_n_new}
         new_sen_outputs = {"dV_dDsn": dV_dDsn, "dV_dDsp": dV_dDsp, "dCse_dDsn": dCse_dDsn, "dCse_dDsp": dCse_dDsp, "dV_dEpsi_sn": dV_dEpsi_sn, "dV_dEpsi_sp": dV_dEpsi_sp, 'dCse_dEpsi_sp': dCse_dEpsi_sp, 'dCse_dEpsi_sn': dCse_dEpsi_sn}
 
@@ -720,7 +721,7 @@ class Reduced_SPMeModel_SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseli
 
 if __name__ == "__main__":
 
-    SPMe = Reduced_SPMeModel_SingleParticleModelElectrolyte_w_Sensitivity(sim_time=1300, init_soc=0)
+    SPMe = SingleParticleModelElectrolyte_w_Sensitivity(sim_time=1300, init_soc=0)
 
     [xn, xp, xe, yn, yp, yep, theta_n, theta_p, docv_dCse_n, docv_dCse_p, V_term,
      time, current, soc, dV_dDsn, dV_dDsp, dCse_dDsn, dCse_dDsp, dV_dEpsi_sn, dV_dEpsi_sp]\
