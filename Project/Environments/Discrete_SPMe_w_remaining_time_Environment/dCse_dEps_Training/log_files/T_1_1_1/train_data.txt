@@ -1,6 +1,0 @@
-Discrete SPMe with Remaining Time State
-
-Training Length: 6 Million
-Outputs: Model, Images
-
-Training Time: 3 Hours

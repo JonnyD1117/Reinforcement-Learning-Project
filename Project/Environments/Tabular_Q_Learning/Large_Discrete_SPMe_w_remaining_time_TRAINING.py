@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # env = gym.make('gym_spm_morestates_discrete_action:spm_morestates_discrete_action-v0')
 
     logging_dir_name = "Large_D_SPMe_action_space_1_p1_n1"
-    trial_name = "T_2_1_9"
+    trial_name = "T_2_1_7"
 
     env = Discrete_SPMe_env(log_dir=logging_dir_name, log_trial_name=trial_name, log_data=False)
 
@@ -34,10 +34,9 @@ if __name__ == '__main__':
 
     # Instantiate Model
     model = DQN(MlpPolicy, env, verbose=1, exploration_fraction=ef, learning_rate=lr)
-    model = DQN.load(f"./{logging_dir_name}/model/T_2_1_8.pt", env=env)
 
     # Train OR Load Model
-    model.learn(total_timesteps=50000000)
+    model.learn(total_timesteps=150000000)
 
     print("TRAINING is OVER")
     env.log_state = False
