@@ -3,29 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import asinh, tanh, cosh
 from SPMe_Baseline_Params import SPMe_Baseline_Parameters
-import time
-
-
-import cProfile, pstats, io
-
-
-def profile(fnc):
-    """A decorator that uses cProfile to profile a function"""
-
-    def inner(*args, **kwargs):
-        pr = cProfile.Profile()
-        pr.enable()
-        retval = fnc(*args, **kwargs)
-        pr.disable()
-        s = io.StringIO()
-        sortby = 'cumulative'
-        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-        ps.print_stats()
-        print(s.getvalue())
-        return retval
-
-    return inner
-
 
 
 class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
@@ -387,6 +364,8 @@ class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
         out_Sepsi_p = self.Sepsi_C_dp @ Sepsi_p
         out_Sepsi_n = self.Sepsi_C_dn @ Sepsi_n
 
+        # print(out_Sepsi_p)
+
         # state space Output Eqn. realization for D_s (neg and Pos)
         out_Sdsp_p = self.Sdsp_C_dp @ Sdsp_p
         out_Sdsn_n = self.Sdsn_C_dn @ Sdsn_n
@@ -443,21 +422,6 @@ class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
 
         new_sen_states = {"Sepsi_p": Sepsi_p_new, "Sepsi_n": Sepsi_n_new, "Sdsp_p": Sdsp_p_new, "Sdsn_n": Sdsn_n_new}
         new_sen_outputs = {"dV_dDsn": dV_dDsn, "dV_dDsp": dV_dDsp, "dCse_dDsn": dCse_dDsn, "dCse_dDsp": dCse_dDsp, "dV_dEpsi_sn": dV_dEpsi_sn, "dV_dEpsi_sp": dV_dEpsi_sp, 'dCse_dEpsi_sp': dCse_dEpsi_sp, 'dCse_dEpsi_sn': dCse_dEpsi_sn}
-
-
-        # print(f"T0: {t0-init_t} ")
-        # print(f"T1: {t1-init_t} ")
-        # print(f"T2: {t2-init_t} ")
-        # print(f"T3: {t3-init_t} ")
-        # print(f"T4: {t4-init_t} ")
-        # print(f"T5: {t5-init_t} ")
-        # print(f"T6: {t6-init_t} ")
-        # print(f"T7: {t7-init_t} ")
-        # print(f"T8: {t8-init_t} ")
-        # print(f"T9: {t9-init_t} ")
-        # print(f"T10: {t10-init_t} ")
-        # print(f"T11: {t11-init_t} ")
-
 
         return [new_sen_states, new_sen_outputs]
 
@@ -693,7 +657,6 @@ class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
         docv_dCse_p = self.OCP_Slope_Cathode(theta_p)
 
         new_sen_states, new_sen_outputs = self.compute_Sensitivities(I, Jn, Jp, i_0n, i_0p, k_n, k_p, theta_n, theta_p, docv_dCse_n, docv_dCse_p, sensitivity_states)
-
         sensitivity_outputs = new_sen_outputs
 
         self.next_full_state = [bat_states, new_sen_states]
@@ -753,31 +716,24 @@ class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
         #
         #     return [bat_states, new_sen_states, outputs, sensitivity_outputs, soc_new, V_term, theta, docv_dCse, done_flag]
 
-
-
         return [bat_states, new_sen_states, outputs, sensitivity_outputs, soc_new, V_term, theta, docv_dCse, done_flag]
 
 
 if __name__ == "__main__":
 
-    SPMe = SingleParticleModelElectrolyte_w_Sensitivity(sim_time=1300, init_soc=.5)
-    init_time = time.time_ns()
-    [bat_states, new_sen_states, outputs, sensitivity_outputs, soc_new, V_term, theta, docv_dCse,done_flag] = SPMe.SPMe_step(states=None, I_input=-25.7, full_sim=False)
-    print(f"Total Time: {(time.time_ns() - init_time) / 1000000000} Seconds")
-    #
-    # [xn, xp, xe, yn, yp, yep, theta_n, theta_p, docv_dCse_n, docv_dCse_p, V_term,
-    #  time, current, soc, dV_dDsn, dV_dDsp, dCse_dDsn, dCse_dDsp, dV_dEpsi_sn, dV_dEpsi_sp]\
-    #     = SPMe.sim(CC=True, zero_init_I=False, I_input=[-25.67*3], plot_results=False)
-    #
-    # print(f"Total Time: {(time.time_ns() - init_time) / 1000000000} Seconds")
-    #
-    #
-    #
-    #
-    # print(f" Minimum SOC={np.min(soc)} : Maximum SOC={np.max(soc)}")
-    #
-    # print(f"Electrode #1  Concentration Minimum={np.min(theta_n)} : Maximum={np.max(theta_n)}")
-    # print(f"Electrode #2  Concentration Minimum={np.min(theta_p)} : Maximum={np.max(theta_p)}")
+    SPMe = SingleParticleModelElectrolyte_w_Sensitivity(sim_time=1300, init_soc=0)
+
+    [xn, xp, xe, yn, yp, yep, theta_n, theta_p, docv_dCse_n, docv_dCse_p, V_term,
+     time, current, soc, dV_dDsn, dV_dDsp, dCse_dDsn, dCse_dDsp, dV_dEpsi_sn, dV_dEpsi_sp]\
+        = SPMe.sim(CC=True, zero_init_I=False, I_input=[-25.67*3], plot_results=False)
+
+
+
+
+    print(f" Minimum SOC={np.min(soc)} : Maximum SOC={np.max(soc)}")
+
+    print(f"Electrode #1  Concentration Minimum={np.min(theta_n)} : Maximum={np.max(theta_n)}")
+    print(f"Electrode #2  Concentration Minimum={np.min(theta_p)} : Maximum={np.max(theta_p)}")
 
 
 

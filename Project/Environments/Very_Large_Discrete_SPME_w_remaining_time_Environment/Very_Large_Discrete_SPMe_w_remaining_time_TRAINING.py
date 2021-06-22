@@ -9,7 +9,7 @@ from stable_baselines3 import PPO, TD3, DQN
 from stable_baselines3.dqn.policies import MlpPolicy
 
 from stable_baselines3.common.noise import NormalActionNoise
-from Large_Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
+from Very_Large_Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
 
 
 if __name__ == '__main__':
@@ -21,7 +21,7 @@ if __name__ == '__main__':
     trial_name = "T_2_1_9"
 
     env = Discrete_SPMe_env(log_dir=logging_dir_name, log_trial_name=trial_name, log_data=False)
-        
+
     # HyperParameters
     lr = 3e-4
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     max_C_val = np.array([25.67 * 1], dtype=np.float32)
     # action_dict = {0: 1.0 * max_C_val, 1: 0., 2: -1.0 * max_C_val}
 
-    action_list_index = np.arange(-1, 1, .1)
+    action_list_index = np.arange(-1, 1, .01)
     action_dict = {index: value * max_C_val for index, value in enumerate(action_list_index)}
 
     obs = env.reset(test_flag=True)

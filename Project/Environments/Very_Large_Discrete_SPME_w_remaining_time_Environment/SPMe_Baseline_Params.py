@@ -77,11 +77,6 @@ class SPMe_Baseline_Parameters:
     kappa_eff_sep = kappa * (epsi_sep ** 1.5)
 
 
-    param_list = [epsilon_sn, epsilon_sp, epsilon_e_n, epsilon_e_p, F, Rn, Rp, R, T, Ar_n, Ar_p, Ln, Lp, Lsep, Lc, Ds_n,
-                  Ds_p, De, De_p, De_n, kn, kp, stoi_n0, stoi_n100, stoi_p0, stoi_p100, SOC, cs_max_n, cs_max_p, Rf,
-                  as_n, as_p, Vn, Vp, t_plus, cep, cen, rfa_n, rfa_p, epsi_sep, epsi_e, epsi_n, gamak, kappa, kappa_eff, kappa_eff_sep]
-
-
 
 if __name__ == "__main__":
 
