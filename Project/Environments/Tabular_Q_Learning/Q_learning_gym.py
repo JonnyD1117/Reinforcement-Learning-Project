@@ -6,6 +6,7 @@ import gym
 from gym import error, spaces, utils, logger
 from gym.utils import seeding
 import numpy as np
+import matplotlib.pyplot as plt
 import random
 from torch.utils.tensorboard import SummaryWriter
 import logging
@@ -94,6 +95,44 @@ def epsilon_greedy_policy(state_ind, Q_table, Q_dims, epsilon):
 
     return action_ind
 
+
+def q_learning_policy(Q_table, num_states, num_actions, initial_state=.5):
+    env = Discrete_SPMe_env(log_dir="", log_trial_name=f"", log_data=False, num_actions=num_actions, num_states=num_states)
+
+    state_value, state_index = Discretize_Value(initial_state, [0, 1], num_states)
+
+    print(f"Initial SOC {state_value} ")
+
+    action_list = []
+    soc_list = []
+    soc_list.append(state_value)
+
+    for t in range(1800):
+
+        ind = np.unravel_index(np.argmax(Q_table[state_index][:]), Q_table.shape)
+        action_index = ind[1]
+
+        action_list.append(action_index)
+
+        soc, reward, done, _ = env.step(np.array([action_index]))
+
+        # Discretize the Resulting SOC
+        new_state_value, new_state_index = Discretize_Value(soc.item(), [0, 1], num_states)
+
+
+
+        state_value = new_state_value
+        state_index = new_state_index
+
+        soc_list.append(state_value)
+
+    return action_list, soc_list
+
+
+
+
+
+
 """
 SPMe Battery is +- 1C-rate capped
 
@@ -110,12 +149,12 @@ Discretization:
 # @profile
 def main():
     num_avg_runs = 1
-    num_episodes = 150
+    num_episodes = 250
     episode_duration = 1800
 
     # Initialize Q-Learning Table
-    num_q_states = 100
-    num_q_actions = 10
+    num_q_states = 250
+    num_q_actions = 51
 
     max_state_val = 1
     min_state_val = 0
@@ -125,8 +164,9 @@ def main():
 
     zipped_actions = Discretize_Value(input_val=None, input_range=[min_action_val, max_action_val], num_disc=num_q_actions, zipped=True)
 
-    action_list = {ind:value for ind, value in zipped_actions}
+    action_dict = {ind:value for ind, value in zipped_actions}
 
+    # print(action_dict)
     Q = np.zeros(shape=[num_q_states, num_q_actions])
     alpha = .1
     epsilon = .5
@@ -168,8 +208,8 @@ def main():
                 state_value = new_state_value
                 state_index = new_state_index
 
-                if done is True:
-                    break
+                # if done is True:
+                #     break
 
     final_time = time.time_ns()
 
@@ -179,6 +219,23 @@ def main():
     # np.save("Q_Table", Q)
     #
     print(Q)
+    # action_dict = {ind:value for ind, value in zipped_actions}
+
+    action_ind_list, soc_val_list =  q_learning_policy(Q, num_q_states, num_q_actions, initial_state=.5)
+
+    action_list = [ action_dict[i] for i in action_ind_list]
+
+    # print(f"SOC LIst {soc_val_list}")
+
+    plt.figure()
+    plt.plot(action_list)
+    plt.title("Input Current")
+
+    plt.figure()
+    plt.plot(soc_val_list)
+    plt.title("SOC Output")
+    plt.show()
+
 
 if __name__ == "__main__":
 

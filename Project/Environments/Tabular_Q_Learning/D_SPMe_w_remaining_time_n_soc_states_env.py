@@ -356,8 +356,10 @@ class SPMenv(gym.Env):
             full_sim=True, states=self.sim_state, I_input=0)
 
         self.sim_state = [bat_states, new_sen_states]
-        self.state = self.unpack_states(bat_states, new_sen_states, outputs, sensitivity_outputs)
-        self.state.append(self.remaining_time)
+        self.state = np.array([self.SOC_0])
+
+        #self.unpack_states(bat_states, new_sen_states, outputs, sensitivity_outputs)
+        # self.state.append(self.remaining_time)
 
         self.steps_beyond_done = None
         return np.array(self.state)
