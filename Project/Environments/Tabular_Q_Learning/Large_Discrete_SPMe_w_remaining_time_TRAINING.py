@@ -9,7 +9,7 @@ from stable_baselines3 import PPO, TD3, DQN
 from stable_baselines3.dqn.policies import MlpPolicy
 
 from stable_baselines3.common.noise import NormalActionNoise
-from Large_Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
+from D_SPMe_w_remaining_time_n_soc_states_env import SPMenv as Discrete_SPMe_env
 
 
 if __name__ == '__main__':

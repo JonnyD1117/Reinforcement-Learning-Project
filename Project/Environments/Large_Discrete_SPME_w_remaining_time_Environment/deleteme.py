@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     # Instantiate Model
     # model = DQN(MlpPolicy, env) # , verbose=1, exploration_fraction=ef, learning_rate=lr)
-    model = DQN.load(path="C:/Users/Indy-Windows/Documents/Reinforcement-Learning-Project/Project/Environments/Large_Discrete_SPME_w_remaining_time_Environment/Large_D_SPMe_action_space_1_p1_n1/model/T_2_1_9.pt")
+    model = DQN.load(path="C:/Users/Indy-Windows/Documents/Reinforcement-Learning-Project/Project/Environments/Large_Discrete_SPME_w_remaining_time_Environment/Large_D_SPMe_action_space_1_p1_n1/model/T_2_1_8.pt")
     # model.load(path="C:/Users/Indy-Windows/Documents/Reinforcement-Learning-Project/Project/Environments/Large_Discrete_SPME_w_remaining_time_Environment/Large_D_SPMe_action_space_1_p1_n1/model/T_2_1_7_1.pt")
 
     for num_reps in range(5):
@@ -85,25 +85,25 @@ if __name__ == '__main__':
         plt.figure()
         plt.plot(soc_list)
         plt.title("State of Charge")
-        plt.savefig(f"./Large_D_SPMe_action_space_1_p1_n1/log_files/T_2_1_9/repeated_prediction/SOC_{pred_val}.png")
+        plt.savefig(f"./Large_D_SPMe_action_space_1_p1_n1/log_files/T_2_1_8/repeated_prediction/SOC_{pred_val}.png")
 
 
         plt.figure()
         plt.plot(epsi_sp_list)
         plt.title("Sensitivity Values")
-        plt.savefig(f"./Large_D_SPMe_action_space_1_p1_n1/log_files/T_2_1_9/repeated_prediction/Sensitivity_{pred_val}.png")
+        plt.savefig(f"./Large_D_SPMe_action_space_1_p1_n1/log_files/T_2_1_8/repeated_prediction/Sensitivity_{pred_val}.png")
 
 
         plt.figure()
         plt.plot(cum_eps_sq_list)
         plt.title("Cumulative Square Sensitivity Values")
-        plt.savefig(f"./Large_D_SPMe_action_space_1_p1_n1/log_files/T_2_1_9/repeated_prediction/Cum_Sen_{pred_val}.png")
+        plt.savefig(f"./Large_D_SPMe_action_space_1_p1_n1/log_files/T_2_1_8/repeated_prediction/Cum_Sen_{pred_val}.png")
 
 
         plt.figure()
         plt.plot(action_list)
         plt.title("Input Currents")
-        plt.savefig(f"./Large_D_SPMe_action_space_1_p1_n1/log_files/T_2_1_9/repeated_prediction/InputCurrent_{pred_val}.png")
+        plt.savefig(f"./Large_D_SPMe_action_space_1_p1_n1/log_files/T_2_1_8/repeated_prediction/InputCurrent_{pred_val}.png")
 
     # plt.figure()
     # plt.plot(soc_list, epsi_sp_list)

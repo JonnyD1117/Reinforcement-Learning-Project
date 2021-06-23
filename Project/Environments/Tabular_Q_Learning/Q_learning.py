@@ -1,6 +1,6 @@
 # Add Imports
 from SPMe_w_Sensitivity_Params import SingleParticleModelElectrolyte_w_Sensitivity as SPMe
-# from Large_Discrete_SPMe_w_remaining_time_env import SPMenv as Discrete_SPMe_env
+# from D_SPMe_w_remaining_time_n_soc_states_env import SPMenv as Discrete_SPMe_env
 #
 # import gym
 # from gym import error, spaces, utils, logger
@@ -150,42 +150,42 @@ def main():
                 # Select Action According to Epsilon Greedy Policy
                 action_index = epsilon_greedy_policy(Q, [num_q_states, num_q_actions], epsilon)
 
-                # # Given the action Index find the corresponding action value
-                # action = action_list[action_index]
-                #
-                # # soc_0 = soc_new[0] + (1/(25.7*3600))*action
-                #
-                # # Given current state, applying current action via SPMe model
-                # [bat_states, new_sen_states, outputs, sensitivity_outputs, soc_new, V_term, theta, docv_dCse, done] = model.SPMe_step(full_sim=True, states=sim_state, I_input=action)
-                # # soc_1 = None
-                #
-                # # soc_new = [soc_0, soc_1]
-                #
-                # # Update Model's internal states
-                # sim_state = [bat_states, new_sen_states]
-                #
-                # # Extract the State of Charge & Epsilon Voltage Sensitivity from states
-                # state_new = soc_new[0].item()
-                #
-                # eps_sensitivity = sensitivity_outputs["dV_dEpsi_sp"]
-                #
-                # # Discretize the Resulting SOC
-                # new_state_value, new_state_index = Discretize_Value(state_new, [0, 1], num_q_states)
-                #
-                # # Compute Reward Function
-                # R = eps_sensitivity**2
-                #
-                # # Update Q-Function
-                # max_Q = np.max(Q[new_state_index][:])
-                #
-                # Q[state_index][action_index] += alpha*(R + gamma*max_Q - Q[state_index][action_index])
-                #
-                # state_value = new_state_value
-                # state_index = new_state_index
+                # Given the action Index find the corresponding action value
+                action = action_list[action_index]
 
-    np.save("Q_Table", Q)
+                # soc_0 = soc_new[0] + (1/(25.7*3600))*action
 
-    print(Q)
+                # Given current state, applying current action via SPMe model
+                [bat_states, new_sen_states, outputs, sensitivity_outputs, soc_new, V_term, theta, docv_dCse, done] = model.SPMe_step(full_sim=True, states=sim_state, I_input=action)
+                # soc_1 = None
+
+                # soc_new = [soc_0, soc_1]
+
+                # Update Model's internal states
+                sim_state = [bat_states, new_sen_states]
+
+                # Extract the State of Charge & Epsilon Voltage Sensitivity from states
+                state_new = soc_new[0].item()
+
+                eps_sensitivity = sensitivity_outputs["dV_dEpsi_sp"]
+
+                # Discretize the Resulting SOC
+                new_state_value, new_state_index = Discretize_Value(state_new, [0, 1], num_q_states)
+
+                # Compute Reward Function
+                R = eps_sensitivity**2
+
+                # Update Q-Function
+                max_Q = np.max(Q[new_state_index][:])
+
+                Q[state_index][action_index] += alpha*(R + gamma*max_Q - Q[state_index][action_index])
+
+                state_value = new_state_value
+                state_index = new_state_index
+
+    # np.save("Q_Table", Q)
+    #
+    # print(Q)
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ if __name__ == '__main__':
     trial_name = "T_2_1_9"
 
     env = Discrete_SPMe_env(log_dir=logging_dir_name, log_trial_name=trial_name, log_data=False)
-        
+
     # HyperParameters
     lr = 3e-4
 
@@ -34,6 +34,9 @@ if __name__ == '__main__':
 
     # Instantiate Model
     model = DQN(MlpPolicy, env, verbose=1, exploration_fraction=ef, learning_rate=lr)
+
+    model.load(f"./{logging_dir_name}/model/T_2_1_8.pt", env=env)
+
     model = DQN.load(f"./{logging_dir_name}/model/T_2_1_8.pt", env=env)
 
     # Train OR Load Model
