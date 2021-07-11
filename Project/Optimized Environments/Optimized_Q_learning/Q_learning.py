@@ -24,20 +24,6 @@ def profile(fnc):
     return inner
 
 
-def epsilon_greedy_policy(Q_table, Q_dims, epsilon):
-    num_act = Q_dims[1]
-    num_states = Q_dims[0]
-
-    if np.random.uniform(0, 1) <= epsilon:
-        action_ind = np.random.randint(0, num_act)
-
-    else:
-        ind = np.unravel_index(np.argmax(Q_table, axis=None), Q_table.shape)
-        action_ind = ind[1]
-
-    return action_ind
-
-
 def Discretization_Dict(input_range, num_disc):
 
     step_size = (input_range[1] - input_range[0]) / num_disc
@@ -62,7 +48,7 @@ def epsilon_greedy_policy(state_ind, Q_table, Q_dims, epsilon):
     num_act = Q_dims[1]
 
     if np.random.uniform(0, 1) <= epsilon:
-        action_ind = np.random.randint(1, (num_act + 1))
+        action_ind = np.random.randint(1, (num_act))
 
     else:
         action_ind = np.argmax(Q_table[state_ind, :])
@@ -274,7 +260,7 @@ def main_optimized():
 
     init_time = time.time_ns()
 
-    for eps in range(1, num_episodes):
+    for eps in tqdm(range(1, num_episodes)):
         if eps % 1000 == 0:
             print(eps)
 
