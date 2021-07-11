@@ -4,7 +4,28 @@ import matplotlib.pyplot as plt
 from math import asinh, tanh, cosh
 from SPMe_Baseline_Params import SPMe_Baseline_Parameters
 
+import cProfile, pstats, io
 
+
+def profile(fnc):
+    """A decorator that uses cProfile to profile a function"""
+
+    def inner(*args, **kwargs):
+        pr = cProfile.Profile()
+        pr.enable()
+        retval = fnc(*args, **kwargs)
+        pr.disable()
+        s = io.StringIO()
+        sortby = 'cumulative'
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        print(s.getvalue())
+        return retval
+
+    return inner
+
+
+@profile
 class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
     def __init__(self, init_soc=.5, custom_params=None, timestep=1, sim_time=3600, voltage_limiter=True):
 
@@ -720,6 +741,7 @@ class SingleParticleModelElectrolyte_w_Sensitivity(SPMe_Baseline_Parameters):
 
 
 if __name__ == "__main__":
+
 
     SPMe = SingleParticleModelElectrolyte_w_Sensitivity(sim_time=1300, init_soc=0)
 

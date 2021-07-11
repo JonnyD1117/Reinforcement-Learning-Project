@@ -1,17 +1,17 @@
 # Add Imports
-from SPMe_w_Sensitivity_Params import SingleParticleModelElectrolyte_w_Sensitivity as SPMe
+# from SPMe_w_Sensitivity_Params import SingleParticleModelElectrolyte_w_Sensitivity as SPMe
 from D_SPMe_w_remaining_time_n_soc_states_env import SPMenv as Discrete_SPMe_env
 
-import gym
-from gym import error, spaces, utils, logger
-from gym.utils import seeding
+# import gym
+# from gym import error, spaces, utils, logger
+# from gym.utils import seeding
 import numpy as np
-import matplotlib.pyplot as plt
-import random
-from torch.utils.tensorboard import SummaryWriter
-import logging
+# import matplotlib.pyplot as plt
+# import random
+# from torch.utils.tensorboard import SummaryWriter
+# import logging
 import time
-import os
+# import os
 from tqdm import tqdm
 import cProfile, pstats, io
 
@@ -129,10 +129,6 @@ def q_learning_policy(Q_table, num_states, num_actions, initial_state=.5):
     return action_list, soc_list
 
 
-
-
-
-
 """
 SPMe Battery is +- 1C-rate capped
 
@@ -149,12 +145,12 @@ Discretization:
 # @profile
 def main():
     num_avg_runs = 1
-    num_episodes = 250
+    num_episodes = 100
     episode_duration = 1800
 
     # Initialize Q-Learning Table
-    num_q_states = 250
-    num_q_actions = 51
+    num_q_states = 1000
+    num_q_actions = 101
 
     max_state_val = 1
     min_state_val = 0
@@ -169,7 +165,7 @@ def main():
     # print(action_dict)
     Q = np.zeros(shape=[num_q_states, num_q_actions])
     alpha = .1
-    epsilon = .5
+    epsilon = .05
     gamma = .98
 
     SOC_0 = .5
@@ -177,12 +173,16 @@ def main():
     time_list = []
 
     init_time = time.time_ns()
+    env = Discrete_SPMe_env(log_dir="", log_trial_name=f"", log_data=False, num_actions=num_q_actions,
+                            num_states=num_q_states)
 
     for avg_num in range(num_avg_runs):
         for eps in tqdm(range(num_episodes)):
 
             # os.mkdir(f"./log_files/avg_num_{avg_num}_ep_num_{eps}")
-            env = Discrete_SPMe_env(log_dir="", log_trial_name=f"", log_data=False, num_actions=num_q_actions, num_states=num_q_states)
+            # env = Discrete_SPMe_env(log_dir="", log_trial_name=f"", log_data=False, num_actions=num_q_actions, num_states=num_q_states)
+
+            env.reset()
 
             state_value, state_index = Discretize_Value(SOC_0, [0, 1], num_q_states)
 
@@ -196,7 +196,7 @@ def main():
 
                 # Discretize the Resulting SOC
                 new_state_value, new_state_index = Discretize_Value(soc.item(), [0, 1], num_q_states)
-                # print(new_state_index)
+
                 # Compute Reward Function
                 R = reward
 
@@ -217,24 +217,22 @@ def main():
 
 
     # np.save("Q_Table", Q)
-    #
-    print(Q)
-    # action_dict = {ind:value for ind, value in zipped_actions}
 
-    action_ind_list, soc_val_list =  q_learning_policy(Q, num_q_states, num_q_actions, initial_state=.5)
+    print(Q)
+
+    action_ind_list, soc_val_list = q_learning_policy(Q, num_q_states, num_q_actions, initial_state=.5)
 
     action_list = [ action_dict[i] for i in action_ind_list]
 
-    # print(f"SOC LIst {soc_val_list}")
 
-    plt.figure()
-    plt.plot(action_list)
-    plt.title("Input Current")
-
-    plt.figure()
-    plt.plot(soc_val_list)
-    plt.title("SOC Output")
-    plt.show()
+    # plt.figure()
+    # plt.plot(action_list)
+    # plt.title("Input Current")
+    #
+    # plt.figure()
+    # plt.plot(soc_val_list)
+    # plt.title("SOC Output")
+    # plt.show()
 
 
 if __name__ == "__main__":
