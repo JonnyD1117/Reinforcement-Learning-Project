@@ -1,8 +1,8 @@
-include("SPMe_Step.jl")
 
-using .Custom_ADD
-# println("YEah Julia Troubles")
+N = 5
 
-# println(Custom_ADD.add_custom(11, 22))
+thing = Dict( (i,j) => i for i in 1:N for j in i+1:N )
 
-println(add_custom(11, 22))
+println(thing)
+
+println(thing[(2,4)])
