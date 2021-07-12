@@ -1,8 +1,10 @@
 
-N = 5
 
-thing = Dict( (i,j) => i for i in 1:N for j in i+1:N )
+Q = [1 2 3; 4 5 6; 7 8 9]
 
-println(thing)
+println(size(Q))
 
-println(thing[(2,4)])
+println(rand(10))
+
+# println(Q)
+# println(Q[3,:])
