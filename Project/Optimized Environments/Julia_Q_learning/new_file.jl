@@ -1,10 +1,12 @@
 
 
-Q = [1 2 3; 4 5 6; 7 8 9]
+Q = [1 2 3 4 5 ]
 
-println(size(Q))
+max_val = maximum(Q)
 
-println(rand(10))
+println(Q)
+println(max_val)
+
 
 # println(Q)
 # println(Q[3,:])

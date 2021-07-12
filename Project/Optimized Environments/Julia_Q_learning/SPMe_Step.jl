@@ -2,14 +2,6 @@
 module SPMe_Battery_Model
 
 export SPMe_step
-export this_print_thing
-
-
-function this_print_thing(input)
-
-    println(input)
-
-end
 
 
 function SPMe_step(xn_old=nothing, xp_old=nothing, xe_old=nothing, Sepsi_p=nothing, Sepsi_n=nothing, I_input=nothing, init_flag=false)
@@ -157,8 +149,8 @@ function SPMe_step(xn_old=nothing, xp_old=nothing, xe_old=nothing, Sepsi_p=nothi
     yp_new = C_dp * xp_old
     yep_new = Ce_dp * xe_old
 
-    println(yn_new[1])
-    println(yp_new[1])
+    # println(yn_new[1])
+    # println(yp_new[1])
 
     # Compute "NEXT" time step "Battery States" via State Space Models (Pos & Neg)
     xn_new = A_dn * xn_old + B_dn * Jn
@@ -210,12 +202,12 @@ function SPMe_step(xn_old=nothing, xp_old=nothing, xe_old=nothing, Sepsi_p=nothi
     out_Sepsi_p = Sepsi_C_dp * Sepsi_p
 
     out_Sepsi_p = out_Sepsi_p[1]
-    println("out_Sepsi_p: $(out_Sepsi_p)")
+    # println("out_Sepsi_p: $(out_Sepsi_p)")
     # state space realization for epsilon_s (Neg & Pos)
     Sepsi_p_new = Sepsi_A_dp * Sepsi_p + Sepsi_B_dp * I  # current input for positive electrode is negative, ... therefore the sensitivity output should be multiplied by -1
-    println("Sepsi_p_new: $(Sepsi_p_new)")
+    # println("Sepsi_p_new: $(Sepsi_p_new)")
     Sepsi_n_new = Sepsi_A_dn * Sepsi_n + Sepsi_B_dn * I
-    println("Sepsi_n_new: $(Sepsi_n_new)")
+    # println("Sepsi_n_new: $(Sepsi_n_new)")
 
 
     # rho1p_1 = -sign(I) * (-3 * R * T) / (0.5 * F * Rp * as_p) * ((1 + 1 / k_p ^ 2) ^ (-0.5))

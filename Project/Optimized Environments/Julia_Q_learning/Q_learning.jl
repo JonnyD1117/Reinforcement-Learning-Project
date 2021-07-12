@@ -1,8 +1,10 @@
 
 using LinearAlgebra
 using Random
-
 include("SPMe_Step.jl")
+
+using .SPMe_Battery_Model
+
 
 function Discretization_Dict(input_range, num_disc)
 
@@ -19,7 +21,7 @@ end
 function Discretize_Value(input_val, input_values, row, col)
 
     input_vect = input_val * ones(row, col)
-    minval, argmin = findmin((abs.(input_values - input_vect))
+    minval, argmin = findmin((abs.(input_values - input_vect)))
     output_val = input_values[argmin]
     output_index = argmin
 
@@ -71,7 +73,7 @@ function q_learning_policy(Q_table, num_states, num_actions, state_range, action
 
     for t = 1:1:1800
 
-        action_index = max(Q_table[state_index,:])
+        action_value, action_index = findmax(Q_table[state_index,:])
 
         I_input = action_values[action_index]
 
@@ -164,8 +166,6 @@ function main_optimized()
     soc_list = []
     current_list = []
 
-    # [soc_row, soc_col] = size(soc_state_values)
-
     state_size = size(soc_state_values)
     soc_row =state_size[1]
     soc_col = 1
@@ -174,7 +174,11 @@ function main_optimized()
 
     # init_time = time.time_ns()
 
+    println("Before LOOP")
+
     for eps = 1:1:num_episodes
+        println("In Episode Loop")
+
         if mod(eps,1000) == 0
             println(eps)
         end
@@ -182,6 +186,7 @@ function main_optimized()
         state_value, state_index = Discretize_Value(SOC_0[eps], soc_state_values, soc_row, soc_col)
 
         for step = 1:1:episode_duration
+
             # Select Action According to Epsilon Greedy Policy
             action_index = epsilon_greedy_policy(state_index, Q, [num_q_states, num_q_actions], epsilon)
             # print(f"Action Index = {action_index}")
@@ -196,15 +201,10 @@ function main_optimized()
 
             end
 
-            initial_step = (stepp ==1) ? 1 : 0
-
-            # print(action_values)
-            # print(len(action_values))
+            initial_step = (step ==1) ? 1 : 0
 
             I_input = action_values[action_index]
-
-            xn_new, xp_new, xe_new, Sepsi_p_new, Sepsi_n_new, dV_dEpsi_sp, soc_new, V_term, theta, docv_dCse, done_flag =\
-                SPMe_step(xn, xp, xe, Sepsi_p, Sepsi_n, I_input=-25.7, init_flag=initial_step)
+            xn_new, xp_new, xe_new, Sepsi_p_new, Sepsi_n_new, dV_dEpsi_sp, soc_new, V_term, theta, docv_dCse, done_flag = SPMe_Battery_Model.SPMe_step(xn, xp, xe, Sepsi_p, Sepsi_n, I_input, initial_step)
 
             soc = soc_new[1]
 
@@ -221,7 +221,7 @@ function main_optimized()
             R = dV_dEpsi_sp[1] ^ 2
 
             # Update Q-Function
-            max_Q = max(Q[new_state_index, :])
+            max_Q = maximum(Q[new_state_index, :])
 
             Q[state_index, action_index] +=  alpha * (R + gamma * max_Q - Q[state_index, action_index])
 
@@ -231,32 +231,18 @@ function main_optimized()
             if soc >= 1.2 || soc < 0 || V_term < 2.25 || V_term >= 4.4
                 break
             end
+
+            print(step)
+
         end
 
-        time_list = [time_list, step]
+        push!(time_list, step)
     end
 
-    # final_time = time.time_ns()
-
-    # print(f"Total Episode Time: {final_time - init_time} "
-    # plt.figure()
-    # plt.plot(soc_list)
-    #
-    # plt.figure()
-    # plt.plot(voltage_list)
-    # plt.figure()
-    # plt.plot(current_list)
-
-    # % Q;
-    # % final_time = toc(t_init);
-    # [action_list, soc_val_list] = q_learning_policy(Q, num_q_states, num_q_actions, [min_state_val, max_state_val],
-    #                                                 [min_action_val, max_action_val]);
-    #
-    # figure()
-    # plot(action_list)
-    # title("Input Current")
-    # %
-    # figure()
-    # plot(soc_val_list)
-    # title("SOC Output")
+    println("OUT of the Loop")
+    print(Q)
 end
+
+
+
+main_optimized()
