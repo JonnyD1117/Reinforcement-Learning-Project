@@ -1,9 +1,6 @@
 
 using LinearAlgebra
 using Random
-using Plots
-using Profile
-using ProfileView
 include("SPMe_Step.jl")
 
 using .SPMe_Battery_Model
@@ -28,25 +25,20 @@ function Discretize_Value(input_val, input_values, row, col)
     output_val = input_values[argmin]
     output_index = argmin
 
-    return output_val, output_index[1]
+    return output_val, output_index
 end
-
 
 function epsilon_greedy_policy(state_ind, Q_table, Q_dims, epsilon)
     num_act = Q_dims[2]
 
-    prob = rand()
-
-    if prob <= epsilon
+    if rand() <= epsilon
         action_ind = rand(1:num_act)
-        return action_ind
-
 
     else
         action_val, action_ind = findmin(Q_table[state_ind, :])
-        return action_ind
-
     end
+
+    return action_ind
 end
 
 
@@ -130,7 +122,7 @@ function main_optimized()
     # random.seed(0)
 
     # Training Duration Parameters
-    num_episodes = 20000
+    num_episodes = 1
     episode_duration = 1800
 
     # Initialize Q - Learning Table
@@ -140,9 +132,6 @@ function main_optimized()
     num_q_actions = 11
     # num_q_states = 50000
     # num_q_actions = 500
-
-    # num_q_states = 25
-    # num_q_actions = 5
 
     # Discretization Parameters
     max_state_val = 1
@@ -155,9 +144,8 @@ function main_optimized()
     action_values, action_index, action_dict = Discretization_Dict([min_action_val, max_action_val], num_q_actions)
     soc_state_values, soc_state__index, soc_state_dict = Discretization_Dict([min_state_val, max_state_val], num_q_states)
 
-
     # Q - Learning Parameters
-    Q = zeros(num_q_states+1 , num_q_actions+1)
+    Q = zeros(num_q_states , num_q_actions)
     alpha = .1
     epsilon = .05
     gamma = .98
@@ -181,27 +169,33 @@ function main_optimized()
     soc_list = []
     current_list = []
 
-    eps_range = 1:1:episode_duration
-
     state_size = size(soc_state_values)
     soc_row = state_size[1]
     soc_col = 1
 
     SOC_0 = rand(num_episodes)
 
-    for eps in 1:num_episodes
+    # init_time = time.time_ns()
 
-        mod(eps, 1000) == 0 ? print("Episode # $(eps) \n") : nothing
+    println("Before LOOP")
 
+    for eps = 1:1:num_episodes
+        # println("In Episode Loop")
+
+        if mod(eps,1000) == 0
+            println(eps)
+        end
 
         state_value, state_index = Discretize_Value(SOC_0[eps], soc_state_values, soc_row, soc_col)
 
-        for step = 1:1:1800
-            # print("Steps = $(step) \n")
+        for step = 1:1:13
 
+            if step == 4
+                print(step)
+            end
             # Select Action According to Epsilon Greedy Policy
             action_index = epsilon_greedy_policy(state_index, Q, [num_q_states, num_q_actions], epsilon)
-            # println("Action Index = $(action_index)")
+            # print(f"Action Index = {action_index}")
 
             # Given the action Index find the corresponding action value
             if step == 1
@@ -216,7 +210,6 @@ function main_optimized()
             initial_step = (step ==1) ? 1 : 0
 
             I_input = action_values[action_index]
-
             xn_new, xp_new, xe_new, Sepsi_p_new, Sepsi_n_new, dV_dEpsi_sp, soc_new, V_term, theta, docv_dCse, done_flag = SPMe_Battery_Model.SPMe_step(xn, xp, xe, Sepsi_p, Sepsi_n, I_input, initial_step)
 
             soc = soc_new[1]
@@ -227,12 +220,8 @@ function main_optimized()
             Sepsi_p = Sepsi_p_new
             Sepsi_n = Sepsi_n_new
 
-
             # Discretize the Resulting SOC
             new_state_value, new_state_index = Discretize_Value(soc, soc_state_values, soc_row, soc_col)
-
-            # println("New State Value = $(new_state_value)")
-            # println("New State Index = $(new_state_index)")
 
             # Compute Reward Function
             R = dV_dEpsi_sp[1] ^ 2
@@ -240,29 +229,19 @@ function main_optimized()
             # Update Q-Function
             max_Q = maximum(Q[new_state_index, :])
 
-            # println(state_index)
-            # println(action_index)
-
             Q[state_index, action_index] +=  alpha * (R + gamma * max_Q - Q[state_index, action_index])
 
             state_value = new_state_value
-            state_index = new_state_index[1]
+            state_index = new_state_index
 
-            # if soc >= 1.2 || soc < 0 || V_term < 2.25 || V_term >= 4.4
-            #     break
-            # end
-            push!(time_list, step)
+            if soc >= 1.2 || soc < 0 || V_term < 2.25 || V_term >= 4.4
+                break
+            end
+
 
         end
 
+        push!(time_list, step)
     end
     # print(Q)
-    # println(time_list)
-    # plot(time_list)
-    # heatmap(Q)
 end
-
-@profile main_optimized()
-# @profview main_optimized()
-
-Juno.profiler()

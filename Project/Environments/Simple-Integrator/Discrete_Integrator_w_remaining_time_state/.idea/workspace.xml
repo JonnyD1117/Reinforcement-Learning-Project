@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebce3363-39db-4915-ab2d-97a53793d1c4" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../Optimized Environments/Optimized_Q_learning/.idea/Optimized_Q_learning.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../Optimized Environments/Optimized_Q_learning/.idea/Optimized_Q_learning.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../Optimized Environments/Optimized_Q_learning/Q_learning.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../../Optimized Environments/Optimized_Q_learning/Q_learning.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../Optimized Environments/Julia_Q_learning/Q_learning.jl" beforeDir="false" afterPath="$PROJECT_DIR$/../../../Optimized Environments/Julia_Q_learning/Q_learning.jl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../Optimized Environments/Julia_Q_learning/new_file.jl" beforeDir="false" afterPath="$PROJECT_DIR$/../../../Optimized Environments/Julia_Q_learning/new_file.jl" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

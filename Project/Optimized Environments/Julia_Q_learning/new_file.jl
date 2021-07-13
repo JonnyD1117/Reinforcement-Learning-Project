@@ -1,12 +1,7 @@
 
+eps_range = 1:1:1800
 
-Q = [1 2 3 4 5 ]
+for step in eps_range
+    print("Steps = $(step) \n")
 
-max_val = maximum(Q)
-
-println(Q)
-println(max_val)
-
-
-# println(Q)
-# println(Q[3,:])
+end
