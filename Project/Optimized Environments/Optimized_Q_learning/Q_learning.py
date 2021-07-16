@@ -211,18 +211,21 @@ def main_optimized():
     # Initialize Q - Learning Table
     # num_q_states = 1000
     # num_q_actions = 101
-    num_q_states = 250
-    num_q_actions = 11
+    # num_q_states = 250
+    # num_q_actions = 11
+    num_q_states = 101
+    num_q_actions = 45
+
     # num_q_states = 50000
     # num_q_actions = 500
 
     # Discretization Parameters
     max_state_val = 1
     min_state_val = 0
-    max_action_val = 25.7
-    min_action_val = -25.7
-    # max_action_val = 25.7 * 3
-    # min_action_val = -25.7 * 3
+    # max_action_val = 25.7
+    # min_action_val = -25.7
+    max_action_val = 25.7 * 3
+    min_action_val = -25.7 * 3
 
     [action_values, action_index, action_dict] = Discretization_Dict([min_action_val, max_action_val], num_q_actions)
     [soc_state_values, soc_state__index, soc_state_dict] = Discretization_Dict([min_state_val, max_state_val], num_q_states)
@@ -256,7 +259,9 @@ def main_optimized():
     soc_row = np.shape(soc_state_values)[0]
     soc_col = 1
 
-    SOC_0 = np.random.uniform(0, 1, size=num_episodes)
+    # SOC_0 = np.random.uniform(0, 1, size=num_episodes)
+
+    SOC_0 = .5
 
     init_time = time.time_ns()
 
@@ -264,7 +269,9 @@ def main_optimized():
         if eps % 1000 == 0:
             print(eps)
 
-        [state_value, state_index] = Discretize_Value(SOC_0[eps], soc_state_values, soc_row, soc_col)
+        # [state_value, state_index] = Discretize_Value(SOC_0[eps], soc_state_values, soc_row, soc_col)
+        [state_value, state_index] = Discretize_Value(SOC_0, soc_state_values, soc_row, soc_col)
+
 
         for step in range(1, episode_duration):
             # Select Action According to Epsilon Greedy Policy
@@ -287,7 +294,7 @@ def main_optimized():
             I_input = action_values[action_index]
 
             [xn_new, xp_new, xe_new, Sepsi_p_new, Sepsi_n_new, dV_dEpsi_sp, soc_new, V_term, theta, docv_dCse, done_flag] =\
-                SPMe_step(xn, xp, xe, Sepsi_p, Sepsi_n, I_input=-25.7, init_flag=initial_step)
+                SPMe_step(xn, xp, xe, Sepsi_p, Sepsi_n, I_input=I_input, init_flag=initial_step)
 
             soc = soc_new[0]
 
@@ -314,7 +321,7 @@ def main_optimized():
             if soc >= 1.2 or soc < 0 or V_term < 2.25 or V_term >= 4.4:
                 break
 
-        time_list = [time_list, step]
+        # time_list = [time_list, step]
 
     final_time = time.time_ns()
 

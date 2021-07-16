@@ -169,10 +169,13 @@ def SPMe_step(xn_old=None, xp_old=None, xe_old=None, Sepsi_p=None, Sepsi_n=None,
     xe_new = Ae_dp @ xe_old + Be_dp * I
 
     # Electrolyte Dynamics
-    vel = (-I * (0.5 * Lp + 0.5 * Ln) / (Ar_n * kappa_eff) + (
-            -I * Lsep) / (Ar_n * kappa_eff_sep) + (
-                   2 * R * T * (1 - t_plus) * (1 + 1.2383) * np.log(
-               (1000 + yep_new[0].item()) / (1000 + yep_new[1].item()))) / F)  # yep(1, k) = positive boundary;
+    # vel = (-I * (0.5 * Lp + 0.5 * Ln) / (Ar_n * kappa_eff) + (
+    #         -I * Lsep) / (Ar_n * kappa_eff_sep) + (
+    #                2 * R * T * (1 - t_plus) * (1 + 1.2383) * np.log(
+    #            (1000 + yep_new[0].item()) / (1000 + yep_new[1].item()))) / F)  # yep(1, k) = positive boundary;
+
+
+    vel = (-I * (0.5 * Lp + 0.5 * Ln) / (Ar_n * kappa_eff) + (-I * Lsep) / (Ar_n * kappa_eff_sep) + (2 * R * T * (1 - t_plus) * (1 + 1.2383) * np.log((1000 + yep_new[0].item()) / (1000 + yep_new[1].item()))) / F)  # yep(1, k) = positive boundary;
 
     # Compute "Exchange Current Density" per Electrode (Pos & Neg)
     i_0n = kn * F * (cen * yn_new * (cs_max_n - yn_new)) ** .5
@@ -197,37 +200,46 @@ def SPMe_step(xn_old=None, xp_old=None, xe_old=None, Sepsi_p=None, Sepsi_n=None,
 
     soc_new = [SOC_n, SOC_p]
 
-    U_n = 0.194 + 1.5 * np.exp(-120.0 * theta_n) + 0.0351 * tanh((theta_n - 0.286) / 0.083) - 0.0045 * tanh(
-        (theta_n - 0.849) / 0.119) - 0.035 * tanh((theta_n - 0.9233) / 0.05) - 0.0147 * tanh(
-        (theta_n - 0.5) / 0.034) - 0.102 * tanh((theta_n - 0.194) / 0.142) - 0.022 * tanh(
-        (theta_n - 0.9) / 0.0164) - 0.011 * tanh((theta_n - 0.124) / 0.0226) + 0.0155 * tanh(
-        (theta_n - 0.105) / 0.029)
+    # U_n = 0.194 + 1.5 * np.exp(-120.0 * theta_n) + 0.0351 * tanh((theta_n - 0.286) / 0.083) - 0.0045 * tanh(
+    #     (theta_n - 0.849) / 0.119) - 0.035 * tanh((theta_n - 0.9233) / 0.05) - 0.0147 * tanh(
+    #     (theta_n - 0.5) / 0.034) - 0.102 * tanh((theta_n - 0.194) / 0.142) - 0.022 * tanh(
+    #     (theta_n - 0.9) / 0.0164) - 0.011 * tanh((theta_n - 0.124) / 0.0226) + 0.0155 * tanh(
+    #     (theta_n - 0.105) / 0.029)
+    #
+    # U_p = 2.16216 + 0.07645 * tanh(30.834 - 54.4806 * theta_p) + 2.1581 * tanh(
+    #     52.294 - 50.294 * theta_p) - 0.14169 * \
+    #       tanh(11.0923 - 19.8543 * theta_p) + 0.2051 * tanh(1.4684 - 5.4888 * theta_p) + 0.2531 * tanh(
+    #     (-theta_p + 0.56478) / 0.1316) - 0.02167 * tanh((theta_p - 0.525) / 0.006)
+    #
+    # docv_dCse_n = -1.5 * (120.0 / cs_max_n) * np.exp(-120.0 * theta_n) + (
+    #         0.0351 / (0.083 * cs_max_n)) * ((cosh((theta_n - 0.286) / 0.083)) ** (-2)) - (
+    #                       0.0045 / (cs_max_n * 0.119)) * (
+    #                       (cosh((theta_n - 0.849) / 0.119)) ** (-2)) - (0.035 / (cs_max_n * 0.05)) * (
+    #                       (cosh((theta_n - 0.9233) / 0.05)) ** (-2)) - (
+    #                       0.0147 / (cs_max_n * 0.034)) * ((cosh((theta_n - 0.5) / 0.034)) ** (-2)) - (
+    #                       0.102 / (cs_max_n * 0.142)) * ((cosh((theta_n - 0.194) / 0.142)) ** (-2)) - (
+    #                       0.022 / (cs_max_n * 0.0164)) * ((cosh((theta_n - 0.9) / 0.0164)) ** (-2)) - (
+    #                       0.011 / (cs_max_n * 0.0226)) * (
+    #                       (cosh((theta_n - 0.124) / 0.0226)) ** (-2)) + (
+    #                       0.0155 / (cs_max_n * 0.029)) * ((cosh((theta_n - 0.105) / 0.029)) ** (-2))
+    #
+    # docv_dCse_p = 0.07645 * (-54.4806 / cs_max_p) * (
+    #         (1.0 / cosh(30.834 - 54.4806 * theta_p)) ** 2) + 2.1581 * (-50.294 / cs_max_p) * (
+    #                       (cosh(52.294 - 50.294 * theta_p)) ** (-2)) + 0.14169 * (
+    #                       19.854 / cs_max_p) * (
+    #                       (cosh(11.0923 - 19.8543 * theta_p)) ** (-2)) - 0.2051 * (
+    #                       5.4888 / cs_max_p) * (
+    #                       (cosh(1.4684 - 5.4888 * theta_p)) ** (-2)) - 0.2531 / 0.1316 / cs_max_p * (
+    #                       (cosh((-theta_p + 0.56478) / 0.1316)) ** (-2)) - 0.02167 / 0.006 /cs_max_p * ((cosh((theta_p - 0.525) / 0.006)) ** (-2))
 
-    U_p = 2.16216 + 0.07645 * tanh(30.834 - 54.4806 * theta_p) + 2.1581 * tanh(
-        52.294 - 50.294 * theta_p) - 0.14169 * \
-          tanh(11.0923 - 19.8543 * theta_p) + 0.2051 * tanh(1.4684 - 5.4888 * theta_p) + 0.2531 * tanh(
-        (-theta_p + 0.56478) / 0.1316) - 0.02167 * tanh((theta_p - 0.525) / 0.006)
 
-    docv_dCse_n = -1.5 * (120.0 / cs_max_n) * np.exp(-120.0 * theta_n) + (
-            0.0351 / (0.083 * cs_max_n)) * ((cosh((theta_n - 0.286) / 0.083)) ** (-2)) - (
-                          0.0045 / (cs_max_n * 0.119)) * (
-                          (cosh((theta_n - 0.849) / 0.119)) ** (-2)) - (0.035 / (cs_max_n * 0.05)) * (
-                          (cosh((theta_n - 0.9233) / 0.05)) ** (-2)) - (
-                          0.0147 / (cs_max_n * 0.034)) * ((cosh((theta_n - 0.5) / 0.034)) ** (-2)) - (
-                          0.102 / (cs_max_n * 0.142)) * ((cosh((theta_n - 0.194) / 0.142)) ** (-2)) - (
-                          0.022 / (cs_max_n * 0.0164)) * ((cosh((theta_n - 0.9) / 0.0164)) ** (-2)) - (
-                          0.011 / (cs_max_n * 0.0226)) * (
-                          (cosh((theta_n - 0.124) / 0.0226)) ** (-2)) + (
-                          0.0155 / (cs_max_n * 0.029)) * ((cosh((theta_n - 0.105) / 0.029)) ** (-2))
+    U_n = 0.194 + 1.5 * np.exp(-120.0 * theta_n) + 0.0351 * tanh((theta_n - 0.286) / 0.083) - 0.0045 * tanh((theta_n - 0.849) / 0.119) - 0.035 * tanh((theta_n - 0.9233) / 0.05) - 0.0147 * tanh((theta_n - 0.5) / 0.034) - 0.102 * tanh((theta_n - 0.194) / 0.142) - 0.022 * tanh((theta_n - 0.9) / 0.0164) - 0.011 * tanh((theta_n - 0.124) / 0.0226) + 0.0155 * tanh((theta_n - 0.105) / 0.029)
 
-    docv_dCse_p = 0.07645 * (-54.4806 / cs_max_p) * (
-            (1.0 / cosh(30.834 - 54.4806 * theta_p)) ** 2) + 2.1581 * (-50.294 / cs_max_p) * (
-                          (cosh(52.294 - 50.294 * theta_p)) ** (-2)) + 0.14169 * (
-                          19.854 / cs_max_p) * (
-                          (cosh(11.0923 - 19.8543 * theta_p)) ** (-2)) - 0.2051 * (
-                          5.4888 / cs_max_p) * (
-                          (cosh(1.4684 - 5.4888 * theta_p)) ** (-2)) - 0.2531 / 0.1316 / cs_max_p * (
-                          (cosh((-theta_p + 0.56478) / 0.1316)) ** (-2)) - 0.02167 / 0.006 /cs_max_p * ((cosh((theta_p - 0.525) / 0.006)) ** (-2))
+    U_p = 2.16216 + 0.07645 * tanh(30.834 - 54.4806 * theta_p) + 2.1581 * tanh(52.294 - 50.294 * theta_p) - 0.14169 * tanh(11.0923 - 19.8543 * theta_p) + 0.2051 * tanh(1.4684 - 5.4888 * theta_p) + 0.2531 * tanh((-theta_p + 0.56478) / 0.1316) - 0.02167 * tanh((theta_p - 0.525) / 0.006)
+
+    docv_dCse_n = -1.5 * (120.0 / cs_max_n) * np.exp(-120.0 * theta_n) + (0.0351 / (0.083 * cs_max_n)) * ((cosh((theta_n - 0.286) / 0.083)) ** (-2)) - (0.0045 / (cs_max_n * 0.119)) * ((cosh((theta_n - 0.849) / 0.119)) ** (-2)) - (0.035 / (cs_max_n * 0.05)) * ((cosh((theta_n - 0.9233) / 0.05)) ** (-2)) - (0.0147 / (cs_max_n * 0.034)) * ((cosh((theta_n - 0.5) / 0.034)) ** (-2)) - (0.102 / (cs_max_n * 0.142)) * ((cosh((theta_n - 0.194) / 0.142)) ** (-2)) - (0.022 / (cs_max_n * 0.0164)) * ((cosh((theta_n - 0.9) / 0.0164)) ** (-2)) - (0.011 / (cs_max_n * 0.0226)) * ((cosh((theta_n - 0.124) / 0.0226)) ** (-2)) + (0.0155 / (cs_max_n * 0.029)) * ((cosh((theta_n - 0.105) / 0.029)) ** (-2))
+
+    docv_dCse_p = 0.07645 * (-54.4806 / cs_max_p) * ((1.0 / cosh(30.834 - 54.4806 * theta_p)) ** 2) + 2.1581 * (-50.294 / cs_max_p) * ((cosh(52.294 - 50.294 * theta_p)) ** (-2)) + 0.14169 * (19.854 / cs_max_p) * ((cosh(11.0923 - 19.8543 * theta_p)) ** (-2)) - 0.2051 * (5.4888 / cs_max_p) * ((cosh(1.4684 - 5.4888 * theta_p)) ** (-2)) - 0.2531 / 0.1316 / cs_max_p * ((cosh((-theta_p + 0.56478) / 0.1316)) ** (-2)) - 0.02167 / 0.006 /cs_max_p * ((cosh((theta_p - 0.525) / 0.006)) ** (-2))
 
     theta_p = theta_p * cs_max_p
     theta_n = theta_n * cs_max_n

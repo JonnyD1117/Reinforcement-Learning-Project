@@ -6,6 +6,8 @@ using Profile
 using ProfileView
 using PProf
 using BenchmarkTools
+using ProgressMeter
+using StaticArrays
 # include("SPMe_Step.jl")
 #
 # using .SPMe_Battery_Model
@@ -105,37 +107,37 @@ function SPMe_step(xn_old=nothing, xp_old=nothing, xe_old=nothing, Sepsi_p=nothi
         stoi_p = stoi_p0 - (stoi_p0 - stoi_p100) * alpha  # Positive Electrode Interpolant
 
         # IF no initial state is supplied to the "step" method, treat step as initial step
-        xn_old = [(stoi_n * cs_max_n) / (rfa_n * 10395 * (Ds_n ^ 2)); 0; 0] # stoi_n100 should be changed if the initial soc is not equal to 50 %
-        xp_old = [(stoi_p * cs_max_p) / (rfa_p * 10395 * (Ds_p ^ 2)); 0; 0]  # initial positive electrode ion concentration
-        xe_old = [0; 0]
+        xn_old = @SMatrix [(stoi_n * cs_max_n) / (rfa_n * 10395 * (Ds_n ^ 2)); 0; 0] # stoi_n100 should be changed if the initial soc is not equal to 50 %
+        xp_old = @SMatrix [(stoi_p * cs_max_p) / (rfa_p * 10395 * (Ds_p ^ 2)); 0; 0]  # initial positive electrode ion concentration
+        xe_old = @SMatrix [0; 0]
 
-        Sepsi_p = [0; 0; 0]
-        Sepsi_n = [0; 0; 0]
-        Sdsp_p = [0; 0; 0; 0]
-        Sdsn_n = [0; 0; 0; 0]
+        Sepsi_p = @SMatrix [0; 0; 0]
+        Sepsi_n = @SMatrix [0; 0; 0]
+        Sdsp_p = @SMatrix [0; 0; 0; 0]
+        Sdsn_n = @SMatrix [0; 0; 0; 0]
 
     end
 
     done_flag = false
 
-    A_dp = [1. 1. 0.; 0. 1. 1.; 0. -0.003465 0.811]
-    B_dp = [0.; 0.; -1.]
-    C_dp = [7.1823213e-08 8.705844e-06 0.0001450974]
+    A_dp = @SMatrix [1. 1. 0.; 0. 1. 1.; 0. -0.003465 0.811]
+    B_dp = @SMatrix [0.; 0.; -1.]
+    C_dp = @SMatrix [7.1823213e-08 8.705844e-06 0.0001450974]
 
-    A_dn = [1. 1. 0.; 0. 1. 1.; 0. -0.0005270265 0.92629]
-    B_dn = [0.; 0.; -1.]
-    C_dn = [9.1035395451e-09 2.82938292e-06 0.0001209138]
+    A_dn = @SMatrix [1. 1. 0.; 0. 1. 1.; 0. -0.0005270265 0.92629]
+    B_dn = @SMatrix [0.; 0.; -1.]
+    C_dn = @SMatrix [9.1035395451e-09 2.82938292e-06 0.0001209138]
 
-    Ae_dp = [0.964820774248931 0.; 0. 0.964820774248931]
-    Be_dp = [6.2185e-06; 6.2185e-06]
-    Ce_dp = [-39977.1776789832 0.; 0. 39977.1776789832]
+    Ae_dp = @SMatrix [0.964820774248931 0.; 0. 0.964820774248931]
+    Be_dp = @SMatrix [6.2185e-06; 6.2185e-06]
+    Ce_dp = @SMatrix [-39977.1776789832 0.; 0. 39977.1776789832]
 
-    Sepsi_A_dp = [1. 1. 0.; 0. 1. 1.; 0. -0.003465 0.811]
-    Sepsi_B_dp = [0.; 0.; 1.]
-    Sepsi_C_dp = [0.00143646294319442 0.174116720387202 2.90194533978671]
+    Sepsi_A_dp =@SMatrix  [1. 1. 0.; 0. 1. 1.; 0. -0.003465 0.811]
+    Sepsi_B_dp = @SMatrix [0.; 0.; 1.]
+    Sepsi_C_dp =@SMatrix  [0.00143646294319442 0.174116720387202 2.90194533978671]
 
-    Sepsi_A_dn = [1. 1. 0.; .0 1. 1.; 0. -0.0005270265 0.92629]
-    Sepsi_B_dn = [0.; 0.; 1.]
+    Sepsi_A_dn = @SMatrix [1. 1. 0.; .0 1. 1.; 0. -0.0005270265 0.92629]
+    Sepsi_B_dn = @SMatrix [0.; 0.; 1.]
 
     I = I_input
     Jn = I / Vn
@@ -164,7 +166,8 @@ function SPMe_step(xn_old=nothing, xp_old=nothing, xe_old=nothing, Sepsi_p=nothi
     xe_new = Ae_dp * xe_old + Be_dp * I
 
     # Electrolyte Dynamics
-    vel = (-I * (0.5 * Lp + 0.5 * Ln) / (Ar_n * kappa_eff) + (-I * Lsep) / (Ar_n * kappa_eff_sep) + (2 * R * T * (1 - t_plus) * (1 + 1.2383) * log((1000 + yep_new[1] / (1000 + yep_new[2])) / F)))
+    # vel = (-I * (0.5 * Lp + 0.5 * Ln) / (Ar_n * kappa_eff) + (-I * Lsep) / (Ar_n * kappa_eff_sep) + (2 * R * T * (1 - t_plus) * (1 + 1.2383) * log((1000 + yep_new[1] / (1000 + yep_new[2])) / F)))
+    vel = (-I * (0.5 * Lp + 0.5 * Ln) / (Ar_n * kappa_eff) + (-I * Lsep) / (Ar_n * kappa_eff_sep) + (2 * R * T * (1 - t_plus) * (1 + 1.2383) * log((1000 + yep_new[1]) / (1000 + yep_new[2]))) / F)
 
     # Compute "Exchange Current Density" per Electrode (Pos & Neg)
     i_0n = kn * F * (cen * yn_new[1] * (cs_max_n - yn_new[1])) ^ .5
@@ -189,17 +192,43 @@ function SPMe_step(xn_old=nothing, xp_old=nothing, xe_old=nothing, Sepsi_p=nothi
 
     soc_new = [SOC_n, SOC_p]
 
-    U_n = 0.194 + 1.5 * exp(-120.0 * theta_n) + 0.0351 * tanh((theta_n - 0.286) / 0.083) - 0.0045 * tanh(
-        (theta_n - 0.849) / 0.119) - 0.035 * tanh((theta_n - 0.9233) / 0.05) - 0.0147 * tanh(
-        (theta_n - 0.5) / 0.034) - 0.102 * tanh((theta_n - 0.194) / 0.142) - 0.022 * tanh(
-        (theta_n - 0.9) / 0.0164) - 0.011 * tanh((theta_n - 0.124) / 0.0226) + 0.0155 * tanh(
-        (theta_n - 0.105) / 0.029)
+    # U_n = 0.194 + 1.5 * exp(-120.0 * theta_n) + 0.0351 * tanh((theta_n - 0.286) / 0.083) - 0.0045 * tanh(
+    #     (theta_n - 0.849) / 0.119) - 0.035 * tanh((theta_n - 0.9233) / 0.05) - 0.0147 * tanh(
+    #     (theta_n - 0.5) / 0.034) - 0.102 * tanh((theta_n - 0.194) / 0.142) - 0.022 * tanh(
+    #     (theta_n - 0.9) / 0.0164) - 0.011 * tanh((theta_n - 0.124) / 0.0226) + 0.0155 * tanh(
+    #     (theta_n - 0.105) / 0.029)
+    #
+    # U_p = 2.16216 + 0.07645 * tanh(30.834 - 54.4806 * theta_p) + 2.1581 * tanh(52.294 - 50.294 * theta_p) - 0.14169 * tanh(11.0923 - 19.8543 * theta_p) + 0.2051 * tanh(1.4684 - 5.4888 * theta_p) + 0.2531 * tanh((-theta_p + 0.56478) / 0.1316) -0.02167 * tanh((theta_p - 0.525) / 0.006)
+    #
+    # docv_dCse_n = -1.5 * (120.0 / cs_max_n) * exp(-120.0 * theta_n) + (0.0351 / (0.083 * cs_max_n)) * ((cosh((theta_n - 0.286) / 0.083)) ^ (-2)) - (0.0045 / (cs_max_n * 0.119)) * ((cosh((theta_n - 0.849) / 0.119)) ^ (-2)) - (0.035 / (cs_max_n * 0.05)) * ((cosh((theta_n - 0.9233) / 0.05)) ^ (-2)) - (0.0147 / (cs_max_n * 0.034)) * ((cosh((theta_n - 0.5) / 0.034)) ^ (-2)) - (0.102 / (cs_max_n * 0.142)) * ((cosh((theta_n - 0.194) / 0.142)) ^ (-2)) - (0.022 / (cs_max_n * 0.0164)) * ((cosh((theta_n - 0.9) / 0.0164)) ^ (-2)) - (0.011 / (cs_max_n * 0.0226)) * ((cosh((theta_n - 0.124) / 0.0226)) ^ (-2)) + (0.0155 / (cs_max_n * 0.029)) * ((cosh((theta_n - 0.105) / 0.029)) ^ (-2))
+    #
+    # docv_dCse_p = 0.07645 * (-54.4806 / cs_max_p) * ((1.0 / cosh(30.834 - 54.4806 * theta_p)) ^ 2) + 2.1581 * (-50.294 / cs_max_p) * ((cosh(52.294 - 50.294 * theta_p)) ^ (-2)) + 0.14169 * (19.854 / cs_max_p) * ((cosh(11.0923 - 19.8543 * theta_p)) ^ (-2)) - 0.2051 * (5.4888 / cs_max_p) * ((cosh(1.4684 - 5.4888 * theta_p)) ^ (-2)) - 0.2531 / 0.1316 / cs_max_p * ((cosh((-theta_p + 0.56478) / 0.1316)) ^ (-2)) - 0.02167 / 0.006 /cs_max_p * ((cosh((theta_p - 0.525) / 0.006)) ^ (-2))
 
-    U_p = 2.16216 + 0.07645 * tanh(30.834 - 54.4806 * theta_p) + 2.1581 * tanh(52.294 - 50.294 * theta_p) - 0.14169 * tanh(11.0923 - 19.8543 * theta_p) + 0.2051 * tanh(1.4684 - 5.4888 * theta_p) + 0.2531 * tanh((-theta_p + 0.56478) / 0.1316) -0.02167 * tanh((theta_p - 0.525) / 0.006)
+    un_1 = 0.194 + 1.5 * exp(-120.0 * theta_n) + 0.0351 * tanh((theta_n - 0.286) / 0.083) - 0.0045 * tanh((theta_n - 0.849) / 0.119) - 0.035 * tanh((theta_n - 0.9233) / 0.05)
+    un_2 = - 0.0147 * tanh((theta_n - 0.5) / 0.034) - 0.102 * tanh((theta_n - 0.194) / 0.142) - 0.022 * tanh((theta_n - 0.9) / 0.0164)
+    un_3 = - 0.011 * tanh((theta_n - 0.124) / 0.0226) + 0.0155 * tanh((theta_n - 0.105) / 0.029)
 
-    docv_dCse_n = -1.5 * (120.0 / cs_max_n) * exp(-120.0 * theta_n) + (0.0351 / (0.083 * cs_max_n)) * ((cosh((theta_n - 0.286) / 0.083)) ^ (-2)) - (0.0045 / (cs_max_n * 0.119)) * ((cosh((theta_n - 0.849) / 0.119)) ^ (-2)) - (0.035 / (cs_max_n * 0.05)) * ((cosh((theta_n - 0.9233) / 0.05)) ^ (-2)) - (0.0147 / (cs_max_n * 0.034)) * ((cosh((theta_n - 0.5) / 0.034)) ^ (-2)) - (0.102 / (cs_max_n * 0.142)) * ((cosh((theta_n - 0.194) / 0.142)) ^ (-2)) - (0.022 / (cs_max_n * 0.0164)) * ((cosh((theta_n - 0.9) / 0.0164)) ^ (-2)) - (0.011 / (cs_max_n * 0.0226)) * ((cosh((theta_n - 0.124) / 0.0226)) ^ (-2)) + (0.0155 / (cs_max_n * 0.029)) * ((cosh((theta_n - 0.105) / 0.029)) ^ (-2))
+    U_n =  un_1 + un_2 + un_3
 
-    docv_dCse_p = 0.07645 * (-54.4806 / cs_max_p) * ((1.0 / cosh(30.834 - 54.4806 * theta_p)) ^ 2) + 2.1581 * (-50.294 / cs_max_p) * ((cosh(52.294 - 50.294 * theta_p)) ^ (-2)) + 0.14169 * (19.854 / cs_max_p) * ((cosh(11.0923 - 19.8543 * theta_p)) ^ (-2)) - 0.2051 * (5.4888 / cs_max_p) * ((cosh(1.4684 - 5.4888 * theta_p)) ^ (-2)) - 0.2531 / 0.1316 / cs_max_p * ((cosh((-theta_p + 0.56478) / 0.1316)) ^ (-2)) - 0.02167 / 0.006 /cs_max_p * ((cosh((theta_p - 0.525) / 0.006)) ^ (-2))
+    up_1 = 2.16216 + 0.07645 * tanh(30.834 - 54.4806 * theta_p) + 2.1581 * tanh(52.294 - 50.294 * theta_p) - 0.14169 * tanh(11.0923 - 19.8543 * theta_p)
+    up_2 = 0.2051 * tanh(1.4684 - 5.4888 * theta_p) + 0.2531 * tanh((-theta_p + 0.56478) / 0.1316) - 0.02167 * tanh((theta_p - 0.525) / 0.006)
+
+    U_p = up_1 + up_2
+
+    docv_n_1 = -1.5 * (120.0 / cs_max_n) * exp(-120.0 * theta_n) + (0.0351 / (0.083 * cs_max_n)) * ((cosh((theta_n - 0.286) / 0.083)) ^ (-2))
+    docv_n_2 = - (0.0045 / (cs_max_n * 0.119)) * ((cosh((theta_n - 0.849) / 0.119)) ^ (-2)) - (0.035 / (cs_max_n * 0.05)) * ((cosh((theta_n - 0.9233) / 0.05)) ^ (-2))
+    docv_n_3 = - (0.0147 / (cs_max_n * 0.034)) * ((cosh((theta_n - 0.5) / 0.034)) ^ (-2)) - (0.102 / (cs_max_n * 0.142)) * ((cosh((theta_n - 0.194) / 0.142)) ^ (-2))
+    docv_n_4 = - (0.022 / (cs_max_n * 0.0164)) * ((cosh((theta_n - 0.9) / 0.0164)) ^ (-2)) - (0.011 / (cs_max_n * 0.0226)) * ((cosh((theta_n - 0.124) / 0.0226)) ^ (-2))
+    docv_n_5 = (0.0155 / (cs_max_n * 0.029)) * ((cosh((theta_n - 0.105) / 0.029)) ^ (-2))
+
+    docv_dCse_n = docv_n_1 + docv_n_2 + docv_n_3 + docv_n_4 + docv_n_5
+
+    docv_p_1 = 0.07645 * (-54.4806 / cs_max_p) * ((1.0 / cosh(30.834 - 54.4806 * theta_p)) ^ 2) + 2.1581 * (-50.294 / cs_max_p) * ((cosh(52.294 - 50.294 * theta_p)) ^ (-2))
+    docv_p_2 =  0.14169 * (19.854 / cs_max_p) * ((cosh(11.0923 - 19.8543 * theta_p)) ^ (-2)) - 0.2051 * (5.4888 / cs_max_p) * ((cosh(1.4684 - 5.4888 * theta_p)) ^ (-2))
+    docv_p_3 = - 0.2531 / 0.1316 / cs_max_p * ((cosh((-theta_p + 0.56478) / 0.1316)) ^ (-2)) - 0.02167 / 0.006 /cs_max_p * ((cosh((theta_p - 0.525) / 0.006)) ^ (-2))
+
+
+    docv_dCse_p = docv_n_1 + docv_n_2 + docv_n_3
 
     theta_p = theta_p * cs_max_p
     theta_n = theta_n * cs_max_n
@@ -371,27 +400,27 @@ function main_optimized()
     # random.seed(0)
 
     # Training Duration Parameters
-    num_episodes = 50000
+    num_episodes = 100000
     episode_duration = 1800
 
     # Initialize Q - Learning Table
     # num_q_states = 1000
     # num_q_actions = 101
-    num_q_states = 250
-    num_q_actions = 11
+    # num_q_states = 250
+    # num_q_actions = 11
     # num_q_states = 50000
     # num_q_actions = 500
 
-    # num_q_states = 25
-    # num_q_actions = 5
+    num_q_states = 101
+    num_q_actions = 45
 
     # Discretization Parameters
     max_state_val = 1
     min_state_val = 0
-    max_action_val = 25.7
-    min_action_val = -25.7
-    # max_action_val = 25.7 * 3
-    # min_action_val = -25.7 * 3
+    # max_action_val = 25.7
+    # min_action_val = -25.7
+    max_action_val = 25.7 * 3
+    min_action_val = -25.7 * 3
 
     action_values, action_index, action_dict = Discretization_Dict([min_action_val, max_action_val], num_q_actions)
     soc_state_values, soc_state__index, soc_state_dict = Discretization_Dict([min_state_val, max_state_val], num_q_states)
@@ -416,9 +445,9 @@ function main_optimized()
     Sdsp_p = 0
     Sdsn_n = 0
 
-    time_list = []
+    time_list = zeros(1, num_episodes*episode_duration)
 
-    voltage_list = []
+    voltage_list = zeros(1, num_episodes*episode_duration)
     soc_list = []
     current_list = []
 
@@ -428,16 +457,16 @@ function main_optimized()
     soc_row = state_size[1]
     soc_col = 1
 
-    SOC_0 = rand(num_episodes)
+    SOC_0 =.5*ones(1, num_episodes)
 
-    for eps in 1:num_episodes
+    @showprogress for eps in 1:num_episodes
 
-        mod(eps, 1000) == 0 ? print("Episode # $(eps) \n") : nothing
+        # mod(eps, 1000) == 0 ? print("Episode # $(eps) \n") : nothing
 
 
         state_value, state_index = Discretize_Value(SOC_0[eps], soc_state_values, soc_row, soc_col)
 
-        for step = 1:1:1800
+        for step = 1:1:episode_duration
             # print("Steps = $(step) \n")
 
             # Select Action According to Epsilon Greedy Policy
@@ -446,12 +475,11 @@ function main_optimized()
 
             # Given the action Index find the corresponding action value
             if step == 1
-                xn = 1.0e+11 * [9.3705; 0; 0]
-                xp = 1.0e+11 * [4.5097; 0; 0]
-                xe = [0; 0]
-                Sepsi_p = [0; 0; 0]
-                Sepsi_n = [0 ; 0; 0]
-
+                xn = @SMatrix [(1.0e+11 *9.3705); 0; 0]
+                xp = @SMatrix [(1.0e+11 *4.5097); 0; 0]
+                xe = @SMatrix [0; 0]
+                Sepsi_p = @SMatrix  [0; 0; 0]
+                Sepsi_n = @SMatrix [0 ; 0; 0]
             end
 
             initial_step = (step ==1) ? 1 : 0
@@ -461,6 +489,7 @@ function main_optimized()
             xn_new, xp_new, xe_new, Sepsi_p_new, Sepsi_n_new, dV_dEpsi_sp, soc_new, V_term, theta, docv_dCse, done_flag = SPMe_step(xn, xp, xe, Sepsi_p, Sepsi_n, I_input, initial_step)
 
             soc = soc_new[1]
+
 
             xn = xn_new
             xp = xp_new
@@ -488,10 +517,14 @@ function main_optimized()
 
             state_value = new_state_value
             state_index = new_state_index[1]
+            push!(voltage_list, V_term)
 
-            # if soc >= 1.2 || soc < 0 || V_term < 2.25 || V_term >= 4.4
-            #     break
-            # end
+            if soc >= 1.1 || soc < 0 || V_term < 2.3 || V_term >= 4.35
+
+                println("SOC = $(soc)")
+                println("V Term = $(V_term)")
+                break
+            end
             push!(time_list, step)
 
         end
@@ -500,26 +533,36 @@ function main_optimized()
     # print(Q)
     # println(time_list)
     # plot(time_list)
+    # plot(voltage_list)
+
     # heatmap(Q)
 
-    return Q
+    return Q, voltage_list
 
 end
 
 
 # main_optimized()
-# @pprof main_optimized()
-# @profview main_optimized()
+# @pprof  Q_table = main_optimized()
+# @profview Q_table = main_optimized()
 # @time Q_table = main_optimized()
-@time Q_table = main_optimized()
+@time Q_table, voltage_list = main_optimized()
+# @profile Q_table, voltage_list = main_optimized()
+
 num_states = 250
 num_actions = 11
+#
+# heatmap(Q_table)
+
+# plot(voltage_list)
 
 state_range = [0, 1]
-action_range = [-25.7, 25.7]
+action_range = [-25.7*3, 25.7*3]
 
 action_list, soc_list = q_learning_policy(Q_table, num_states, num_actions, state_range, action_range)
 
-plot!(action_list, title="Action Titles")
+# plot!(action_list, title="Action Titles")
+plot(soc_list, title="Q-Learning SOC Plot")
+
 
 # Juno.profiler()
