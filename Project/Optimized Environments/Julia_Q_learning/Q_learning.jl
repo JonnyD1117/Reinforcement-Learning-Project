@@ -428,7 +428,7 @@ function main_optimized()
 
     # Q - Learning Parameters
     Q = zeros(num_q_states+1 , num_q_actions+1)
-    alpha = .1
+    alpha = .01
     epsilon = .05
     gamma = .98
 
@@ -517,7 +517,7 @@ function main_optimized()
 
             state_value = new_state_value
             state_index = new_state_index[1]
-            push!(voltage_list, V_term)
+            # push!(voltage_list, V_term)
 
             if soc >= 1.1 || soc < 0 || V_term < 2.3 || V_term >= 4.35
 
@@ -525,7 +525,7 @@ function main_optimized()
                 println("V Term = $(V_term)")
                 break
             end
-            push!(time_list, step)
+            # push!(time_list, step)
 
         end
 
@@ -556,13 +556,13 @@ num_actions = 11
 
 # plot(voltage_list)
 
-state_range = [0, 1]
-action_range = [-25.7*3, 25.7*3]
-
-action_list, soc_list = q_learning_policy(Q_table, num_states, num_actions, state_range, action_range)
-
-# plot!(action_list, title="Action Titles")
-plot(soc_list, title="Q-Learning SOC Plot")
+# state_range = [0, 1]
+# action_range = [-25.7*3, 25.7*3]
+#
+# action_list, soc_list = q_learning_policy(Q_table, num_states, num_actions, state_range, action_range)
+#
+# # plot!(action_list, title="Action Titles")
+# plot(soc_list, title="Q-Learning SOC Plot")
 
 
 # Juno.profiler()
