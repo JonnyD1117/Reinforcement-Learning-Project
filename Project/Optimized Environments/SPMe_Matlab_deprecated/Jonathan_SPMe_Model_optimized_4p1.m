@@ -7,12 +7,18 @@ close all
 clc
 t = tic;
 % Training Duration Parameters
-num_episodes = 100000;
+num_episodes = 100000 ;
 episode_duration = 1800;
 
 % Initialize Q-Learning Table
-num_q_states = 101;
-num_q_actions = 45;
+% num_q_states = 1000;
+% num_q_actions = 101;
+%     num_q_states = 250;
+%     num_q_actions = 11;
+%     num_q_states = 50000;
+%     num_q_actions = 500;
+    num_q_states = 101;
+    num_q_actions = 45;
 
 % Discretization Parameters
 max_state_val = 1;
@@ -27,18 +33,29 @@ min_action_val = -25.7*3;
 
 % Q-Learning Parameters
 Q = zeros(num_q_states+1, num_q_actions+1);
-alpha = .5;
-% epsilon = .05;
-% gamma = .98;
-gamma = 1;
-
+alpha = .1;
+epsilon = .05;
+gamma = .98;
 
 % SPMe Initialization Parameters
+SOC_0 = .5;
+% [soc_state_value, soc_state_index] = Discretize_Value(SOC_0, soc_state_values);
+
 I_input = -25.7;
 full_sim = 0;
 init_flag = 1; 
 
+xn = 0; 
+xp = 0; 
+xe = 0; 
+Sepsi_p = 0; 
+Sepsi_n = 0; 
+Sdsp_p = 0; 
+Sdsn_n = 0; 
+
 time_list = [];
+
+% spme_params = load("C:\Users\Indy-Windows\Desktop\SPMe_opt3_const_vars.mat");
 spme_params = 0; 
 
 voltage_list = [] ; 
@@ -46,85 +63,86 @@ soc_list = [];
 current_list = [] ; 
 
 [soc_row, soc_col] = size(soc_state_values); 
-% SOC_0 = rand(1, num_episodes);
+SOC_0 = rand(1, num_episodes);
 
-% SOC_0 = .5*ones(1, num_episodes);
-SOC_0 = .5;
-[state_value_0, state_index_0] = Discretize_Value(SOC_0, soc_state_values, soc_row, soc_col);
+SOC_0 = .5*ones(1, num_episodes);
 
-epsilon_list = linspace(.6,.01, num_episodes);
-alpha_list = linspace(.5, .05, num_episodes);
-
-% alpha_list = [.5*ones(1, .5*num_episodes), linspace(.5, .05, .5*num_episodes) ]; 
+epsilon_list = linspace(1,.05, (num_episodes-2000));
 
 
     for eps = 1:1:num_episodes
-
-        epsilon = epsilon_list(eps);
-        alpha = alpha_list(eps);
+    %     disp(eps)
 
         if mod(eps, 1000) == 0
             disp(eps)
-        end  
+    %         epsilon = epsilon*.75;
+        end 
 
-        % [state_value, state_index] = Discretize_Value(SOC_0(eps), soc_state_values, soc_row, soc_col);
+        if eps >= (num_episodes - 2000)
+            
+            epsilon = .05;
+        else
+            epsilon = epsilon_list(eps);
+        end 
+        
+%         if eps <= 100000
+%             epsilon = epsilon*.75;
+%         else
+%             epsilon = .05;
+%         end 
 
-        state_value = state_value_0; 
-        state_index = state_index_0;
+        [state_value, state_index] = Discretize_Value(SOC_0(eps), soc_state_values, soc_row, soc_col);
 
         for step = 1:1:episode_duration
-            % Select Action According to Epsilon Greedy Policy
+    %         disp(step)
+
+            %# Select Action According to Epsilon Greedy Policy
             action_index = epsilon_greedy_policy(state_index, Q, [num_q_states, num_q_actions], epsilon);
 
-            % Given the action Index find the corresponding action value                                
-            if step == 1
-                init_flag =1; 
-                xn = 1.0e+11*[9.3705; 0; 0];
-                xp = 1.0e+11*[4.5097; 0; 0];
-                xe = [0;0];
-                Sepsi_p = [0; 0; 0];
-                Sepsi_n = [0; 0; 0];    
-            end 
+            %# Given the action Index find the corresponding action value                                
+        if step ==1
+            init_flag =1; 
+            xn = 1.0e+11*[9.3705; 0; 0];
+            xp = 1.0e+11*[4.5097; 0; 0];
+            xe = [0;0];
+            Sepsi_p = [0; 0; 0];
+            Sepsi_n = [0; 0; 0];
+
+        end 
 
             I_input = action_values(action_index);
 
             [xn_new, xp_new, xe_new, Sepsi_p_new, Sepsi_n_new,dV_dEpsi_sp,...
             soc_new, V_term, theta, docv_dCse, done_flag] = SPMe_step( xn, xp, xe, Sepsi_p, Sepsi_n, I_input, full_sim, init_flag, spme_params);
 
-            % soc = (soc_new(1)+soc_new(2))/2;
-            soc =  soc_new(2);
+             soc = (soc_new(1)+soc_new(2))/2;
 
-             xn = xn_new;
-             xp = xp_new;
-             xe = xe_new;
-             Sepsi_p = Sepsi_p_new;
-             Sepsi_n = Sepsi_n_new;
+             xn =xn_new;
+             xp =xp_new;
+             xe =xe_new;
+             Sepsi_p =Sepsi_p_new;
+             Sepsi_n =Sepsi_n_new;
 
-            % Discretize the Resulting SOC
+            %# Discretize the Resulting SOC
             [new_state_value, new_state_index] = Discretize_Value(soc, soc_state_values, soc_row, soc_col);
 
-            if(soc > 1.0 || soc <0 || V_term < 2.25 || V_term >= 4.4)
+            %# Compute Reward Function
+            R = dV_dEpsi_sp(1)^2;
 
-                %# Compute Reward Function
-                R = -1;    
-                %# Update Q-Function
-                [max_Q, max_Q_ind] = max(Q(new_state_index, :));    
-                Q(state_index,action_index) = Q(state_index,action_index) + alpha*(R + gamma*max_Q - Q(state_index, action_index));
+            %# Update Q-Function
+            [max_Q, max_Q_ind] = max(Q(new_state_index, :));
+
+            Q(state_index,action_index) = Q(state_index,action_index) + alpha*(R + gamma*max_Q - Q(state_index, action_index));
+
+            state_value = new_state_value;
+            state_index = new_state_index;
+
+            if( soc >= 1.2 || soc <0 || V_term < 2.25 || V_term >= 4.4)
 
                 break;
-            else 
-
-                %# Compute Reward Function
-                R = (.5*dV_dEpsi_sp(1))^2;    
-                %# Update Q-Function
-                [max_Q, max_Q_ind] = max(Q(new_state_index, :));
-    
-                Q(state_index,action_index) = Q(state_index,action_index) + alpha*(R + gamma*max_Q - Q(state_index, action_index));
-    
-                state_value = new_state_value;
-                state_index = new_state_index;
-            end 
+             end 
         end 
+%         time_list = [time_list, step];
     end
 
 
@@ -151,14 +169,12 @@ alpha_list = linspace(.5, .05, num_episodes);
 %
     [action_list, soc_val_list] = q_learning_policy(Q, num_q_states, num_q_actions, [min_state_val,max_state_val ], [min_action_val, max_action_val] );
 
-    time = 1:1:1801;
-
     figure()
     plot(action_list)
     title("Input Current")
         %
     figure()
-    plot(time, soc_val_list)
+    plot(soc_val_list)
     title("SOC Output")
 
 
@@ -331,9 +347,17 @@ end
 % CHECKED
 function [output_val, output_index ] =  Discretize_Value(input_val, input_values, row, col)
     
+%     [row, col] = size(input_values);    
     input_vect = input_val.*ones(row, col);   
+    
+%     diff = input_values-input_vect;
+%     abs_diff_val = abs(diff);
+%     
+%         [~, argmin] = min(abs_diff_val);
+
     [~, argmin] = min(abs(input_values-input_vect));
-        
+    
+    
     output_val = input_values(argmin);
     output_index = argmin;     
 end
@@ -346,10 +370,6 @@ function action_ind =  epsilon_greedy_policy(state_ind, Q_table, Q_dims, epsilon
 
     else        
         [~, action_ind] = max(Q_table(state_ind, :));
-
-        if length(action_ind) >1
-            action_ind = randi(length(action_ind));
-        end 
     end 
 end    
 
@@ -373,16 +393,16 @@ function [action_list, soc_list] = q_learning_policy(Q_table, num_states, num_ac
 
     [state_value, state_index] = Discretize_Value(SOC_0, soc_state_values, soc_row, soc_col);     
 
-    spme_params = 0; 
+    spme_params = load("C:\Users\Indy-Windows\Desktop\SPMe_opt3_const_vars.mat");
 
     full_sim = 0;
     init_flag = 1; 
 
-%     xn = 0; 
-%     xp = 0; 
-%     xe = 0; 
-%     Sepsi_p = 0; 
-%     Sepsi_n = 0; 
+    xn = 0; 
+    xp = 0; 
+    xe = 0; 
+    Sepsi_p = 0; 
+    Sepsi_n = 0; 
     
     action_list = [];
     soc_list = [];
@@ -422,7 +442,7 @@ function [action_list, soc_list] = q_learning_policy(Q_table, num_states, num_ac
 
         state_value = new_state_value;
         state_index = new_state_index;
-        soc_list = [soc_list,soc ];
+        soc_list = [soc_list,state_value ];
 
     end     
 end 
