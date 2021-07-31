@@ -1,57 +1,14 @@
+function [Observation,Reward,IsDone,LoggedSignals] = step(Action, LogSig)
 
+%     disp("Log Signal Size:")
+%     disp(size(LoggedSignals.xn))
 
-
-
-%% SPME Matlab RL Environment Definition
-
-classdef SPMeBatteryEnv < rl.env.MATLABEnvironment
-    % SPMEBATTERYENV:     
-    %% Properties (set properties' attributes accordingly)
-    properties
-        % Initialize system state [xn, xp, xe, Sepsi_p, Sepsi_n, soc]
-        State = zeros(6, 1);
-    end
-    
-    properties(Access = protected)
-        % Initialize internal flag to indicate episode termination
-        IsDone = false;         
-    end
-
-    %% Necessary Methods
-    methods              
-        % Contructor method creates an instance of the environment
-        % Change class name and constructor name accordingly
-        function this = SPMeBatteryEnv()
-
-            % Initialize Observation settings
-            ObservationInfo = rlNumericSpec([1 1]);
-            ObservationInfo.Name = 'SPMeBatteryEnv States';
-            ObservationInfo.Description = 'soc';
-
-            action_space = linspace(-25.7, 25.7, 45);
-            
-            % Initialize Action settings   
-            ActionInfo = rlFiniteSetSpec(action_space);
-            ActionInfo.Name = 'SPMeBatteryEnv Action';
-            
-            % The following line implements built-in functions of RL env
-            this = this@rl.env.MATLABEnvironment(ObservationInfo,ActionInfo);
-            
-            % Initialize property values and pre-compute necessary values
-            % updateActionInfo(this);
-        end
-        
-        % Apply system dynamics and simulates the environment with the 
-        % given action for one step.
-        function [Observation,Reward,IsDone,LoggedSignals] = step(this, Action)
-            LoggedSignals = [];
-
-            xn_old = this.State(1:3);
-            xp_old = this.State(4:6);
-            xe_old = this.State(7:8);
-            Sepsi_p = this.State(9:11);
-            Sepsi_n = this.State(12:14);
-            soc = this.State(15);
+            xn_old = LogSig.xn;
+            xp_old = LogSig.xp;
+            xe_old = LogSig.xe;
+            Sepsi_p = LogSig.Sepsi_p;
+            Sepsi_n = LogSig.Sepsi_n;
+            soc = LogSig.soc;
 
             done_flag = 0;
             F = 96487;  % # Faraday constant
@@ -177,87 +134,25 @@ classdef SPMeBatteryEnv < rl.env.MATLABEnvironment
             V_term = (U_p - U_n) + (eta_p - eta_n) + vel - Rf * I / (Ar_n * Ln * as_n);
 
             %             Observation = [xn_new; xp_new; xe_new; Sepsi_p; Sepsi_n; soc_new(1)]; 
-            %             this.State = Observation; 
+            %             State = Observation; 
 
             Observation = soc_new(1); 
-            this.State = [xn_new; xp_new; xe_new; Sepsi_p; Sepsi_n; soc_new(1)]; 
+            LoggedSignals = struct; 
+
+%             LoggedSignals = [xn_new; xp_new; xe_new; Sepsi_p; Sepsi_n; soc_new(1)]; 
+
+            LoggedSignals.xn = xn_new;
+            LoggedSignals.xp = xp_new;
+            LoggedSignals.xe = xe_new;
+            LoggedSignals.Sepsi_p = Sepsi_p;
+            LoggedSignals.Sepsi_n = Sepsi_n;
+            LoggedSignals.soc = soc_new(1);
 
             % Check terminal condition
             IsDone = soc_new(1) > 1.0 || soc_new(1) <= 0 || V_term < 2.3 || V_term >= 4.5; 
-            
-            this.IsDone = IsDone;
-            
+                        
             % Get reward
             Reward = .5*dV_dEpsi_sp^2;
             
-            % (optional) use notifyEnvUpdated to signal that the 
-            % environment has been updated (e.g. to update visualization)
-            notifyEnvUpdated(this);
-        end
-        
-        % Reset environment to initial state and output initial observation
-        function InitialObservation = reset(this)
-
-%             xn_old = this.State(1);
-%             xp_old = this.State(2);
-%             xe_old = this.State(3);
-%             Sepsi_p = this.State(4);
-%             Sepsi_n = this.State(5);
-%             soc = this.State(6);
-
-            xn = 1.0e+11.*[9.3705; 0; 0];
-            xp = 1.0e+11.*[4.5097; 0; 0];
-            xe = [0;0];
-            Sepsi_p = [0; 0; 0];
-            Sepsi_n = [0; 0; 0];
-            soc = .5;
-
-            InitialObservation = [xn; xp; xe; Sepsi_p; Sepsi_n; soc]; 
-            this.State = InitialObservation; 
-            
-            % (optional) use notifyEnvUpdated to signal that the 
-            % environment has been updated (e.g. to update visualization)
-            notifyEnvUpdated(this);
-        end
-    end
-    %% Optional Methods (set methods' attributes accordingly)
-%     methods               
-%         % Helper methods to create the environment        
-%         % (optional) Visualization method
-%         function plot(this)
-%             % Initiate the visualization
-%             
-%             % Update the visualization
-%             envUpdatedCallback(this)
-%         end
-%         
-%         % (optional) Properties validation through set methods
-%         function set.State(this,state)
-%             validateattributes(state,{'numeric'},{'finite','real','vector','numel',4},'','State');
-%             this.State = double(state(:));
-%             notifyEnvUpdated(this);
-%         end
-%         
-%     end
-    
-    methods (Access = protected)
-        % (optional) update visualization everytime the environment is updated 
-        % (notifyEnvUpdated is called)
-        function envUpdatedCallback(this)
-        end
-    end
 end
-
-
-%%
-
-
-
-
-
-
-
-
-
-
-
+        
