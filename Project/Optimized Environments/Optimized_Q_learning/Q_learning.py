@@ -205,7 +205,7 @@ def main_optimized():
     np.random.seed(0)
 
     # Training Duration Parameters
-    num_episodes = 100000
+    num_episodes = 5000
     episode_duration = 1800
 
     # Initialize Q - Learning Table
@@ -265,7 +265,13 @@ def main_optimized():
 
     init_time = time.time_ns()
 
+    epsilon_list = np.linspace(.6, .01, num_episodes)
+    alpha_list = np.linspace(.5, .05, num_episodes)
+
     for eps in tqdm(range(1, num_episodes)):
+
+        epsilon = epsilon_list[eps]
+        alpha = alpha_list[eps]
         if eps % 1000 == 0:
             print(eps)
 
@@ -313,12 +319,12 @@ def main_optimized():
             # Update Q-Function
             max_Q = np.max(Q[new_state_index, :])
 
-            Q[state_index, action_index] = Q[state_index, action_index] + alpha * (R + gamma * max_Q - Q[state_index, action_index])
+            Q[state_index, action_index] += alpha * (R + gamma * max_Q - Q[state_index, action_index])
 
             state_value = new_state_value
             state_index = new_state_index
 
-            if soc >= 1.2 or soc < 0 or V_term < 2.25 or V_term >= 4.4:
+            if soc > 1.0 or soc < 0 or V_term < 2.25 or V_term >= 4.4:
                 break
 
         # time_list = [time_list, step]
@@ -327,13 +333,19 @@ def main_optimized():
 
     print(f"Total Episode Time: {final_time - init_time} ")
 
-    plt.figure()
-    plt.plot(soc_list)
+    soc_list, action_list = q_learning_policy(Q, num_q_states, num_q_actions, [0,1], [-25.7*3, 25.7*3])
 
     plt.figure()
-    plt.plot(voltage_list)
+    plt.plot(soc_list)
+    plt.title("SOC")
     plt.figure()
-    plt.plot(current_list)
+    plt.plot(action_list)
+    plt.title("Input Current")
+
+    # plt.figure()
+    # plt.plot(voltage_list)
+    # plt.figure()
+    # plt.plot(current_list)
 
     # % Q;
     # % final_time = toc(t_init);
@@ -354,3 +366,4 @@ if __name__ == "__main__":
     # main()
 
     main_optimized()
+
