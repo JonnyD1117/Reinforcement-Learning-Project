@@ -7,7 +7,7 @@ close all
 clc
 t = tic;
 % Training Duration Parameters
-num_episodes = 100000;
+num_episodes = 300000;
 episode_duration = 1800;
 
 % Initialize Q-Learning Table
@@ -27,7 +27,7 @@ min_action_val = -25.7*3;
 
 % Q-Learning Parameters
 Q = zeros(num_q_states+1, num_q_actions+1);
-alpha = .5;
+alpha = .1;
 % epsilon = .05;
 % gamma = .98;
 gamma = 1;
@@ -52,16 +52,19 @@ current_list = [] ;
 SOC_0 = .5;
 [state_value_0, state_index_0] = Discretize_Value(SOC_0, soc_state_values, soc_row, soc_col);
 
-epsilon_list = linspace(.6,.01, num_episodes);
-alpha_list = linspace(.5, .05, num_episodes);
+% epsilon_list = linspace(.6,.01, num_episodes);
+epsilon_list = .6*logspace(0,-10*.25, num_episodes);
 
-% alpha_list = [.5*ones(1, .5*num_episodes), linspace(.5, .05, .5*num_episodes) ]; 
+% alpha_list = linspace(.5, .01, num_episodes);
+% alpha_list = .5*logspace(0,-10*.25, num_episodes);
+
+% alpha_list = [linspace(.5, .1, .5*num_episodes), .1*ones(1, .5*num_episodes)]; 
 
 
     for eps = 1:1:num_episodes
 
         epsilon = epsilon_list(eps);
-        alpha = alpha_list(eps);
+%         alpha = alpha_list(eps);
 
         if mod(eps, 1000) == 0
             disp(eps)
@@ -149,6 +152,7 @@ alpha_list = linspace(.5, .05, num_episodes);
 % 
 
 %
+
     [action_list, soc_val_list] = q_learning_policy(Q, num_q_states, num_q_actions, [min_state_val,max_state_val ], [min_action_val, max_action_val] );
 
     time = 1:1:1801;
@@ -364,6 +368,8 @@ function [action_list, soc_list] = q_learning_policy(Q_table, num_states, num_ac
 
     SOC_0 = .5;
     I_input = -25.7;
+
+    G = 0;
     
     [soc_state_values, ~, ~] = Discretization_Dict([min_state_val, max_state_val], num_states);
     [action_values, ~, ~] = Discretization_Dict([min_action_val, max_action_val], num_actions);
@@ -409,6 +415,10 @@ function [action_list, soc_list] = q_learning_policy(Q_table, num_states, num_ac
                 dV_dEpsi_sp, soc_new, V_term, ...
                 theta, docv_dCse, done_flag] = SPMe_step( xn, xp, xe, Sepsi_p, Sepsi_n,  I_input, full_sim, init_flag, spme_params);
 
+            R = (.5*dV_dEpsi_sp(1))^2; 
+
+            G = G + R;
+
         soc = soc_new(1);
 
         xn =xn_new;
@@ -424,5 +434,8 @@ function [action_list, soc_list] = q_learning_policy(Q_table, num_states, num_ac
         state_index = new_state_index;
         soc_list = [soc_list,soc ];
 
-    end     
+    end   
+
+    disp("Q-Learning Return")
+    disp(G)
 end 

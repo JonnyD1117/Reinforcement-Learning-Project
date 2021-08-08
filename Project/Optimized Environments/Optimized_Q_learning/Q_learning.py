@@ -59,11 +59,11 @@ def epsilon_greedy_policy(state_ind, Q_table, Q_dims, epsilon):
 def q_learning_policy(Q_table, num_states, num_actions, state_range, action_range):
 
     # Discretization Parameters
-    max_state_val = state_range(1)
-    min_state_val = state_range(0)
+    max_state_val = state_range[1]
+    min_state_val = state_range[0]
 
-    max_action_val = action_range(1)
-    min_action_val = action_range(0)
+    max_action_val = action_range[1]
+    min_action_val = action_range[0]
 
     SOC_0 = .5
     I_input = -25.7
@@ -71,7 +71,14 @@ def q_learning_policy(Q_table, num_states, num_actions, state_range, action_rang
     [soc_state_values, _, _] = Discretization_Dict([min_state_val, max_state_val], num_states)
     [action_values, _, _] = Discretization_Dict([min_action_val, max_action_val], num_actions)
 
-    [soc_row, soc_col] = np.size(soc_state_values)
+    # print(soc_state_values)
+    # print(np.size(soc_state_values))
+    # soc_row, soc_col = np.size(soc_state_values)
+
+    soc_shape = np.shape(soc_state_values)
+    # print(soc_shape)
+    soc_row = soc_shape[0]
+    soc_col = 1
     [state_value, state_index] = Discretize_Value(SOC_0, soc_state_values, soc_row, soc_col)
 
     init_flag = 1
@@ -84,15 +91,18 @@ def q_learning_policy(Q_table, num_states, num_actions, state_range, action_rang
 
     action_list = []
     soc_list = []
-    soc_list = [soc_list, SOC_0]
+    soc_list.append(SOC_0)
 
-    for t in range(1,1800):
+    for t in range(1, 1800):
 
-        action_index = np.max(Q_table[state_index,:])
+        # print(t)
+
+        action_index = np.argmax(Q_table[state_index][:])
+
+        # print(action_index)
 
         I_input = action_values[action_index]
-
-        action_list = [action_list, I_input]
+        action_list.append(I_input)
 
         if t == 1:
             init_flag = 1
@@ -117,95 +127,18 @@ def q_learning_policy(Q_table, num_states, num_actions, state_range, action_rang
 
         state_value = new_state_value
         state_index = new_state_index
-        soc_list = [soc_list, state_value]
+
+        soc_list.append(state_value)
 
     return [action_list, soc_list]
 
-
-# # Initialize Q-Learning Parameters:
-# def main():
-#     num_avg_runs = 1
-#     num_episodes = 25000
-#     episode_duration = 1800
-#
-#     # Initialize Q-Learning Table
-#     num_q_states = 10
-#     num_q_actions = 10
-#
-#     max_state_val = 1
-#     min_state_val = 0
-#
-#     max_action_val = 25.7
-#     min_action_val = -25.7
-#
-#     zipped_actions = Discretize_Value(input_val=None, input_range=[min_action_val, max_action_val], num_disc=num_q_actions, zipped=True)
-#
-#     action_list = {ind:value for ind, value in zipped_actions}
-#
-#     Q = np.zeros(shape=[num_q_states, num_q_actions])
-#     alpha = .1
-#     epsilon = .05
-#     gamma = .98
-#
-#     # model = SPMe(init_soc=.5)
-#     # sim_state_0 = model.full_init_state
-#     # state_value_0, state_index_0 = Discretize_Value(.5, [0, 1], num_q_states)
-#
-#     for avg_num in range(num_avg_runs):
-#         for eps in tqdm(range(num_episodes)):
-#
-#             # Initialize SPMe Model for each Episode
-#             SOC_0 = .5
-#             soc_new = [.5, .5]
-#             # model = SPMe(init_soc=SOC_0)
-#             # sim_state = sim_state_0
-#             sim_state = model.full_init_state
-#             state_value, state_index = Discretize_Value(SOC_0, [0, 1], num_q_states)
-#
-#             for step in range(episode_duration):
-#                 # Select Action According to Epsilon Greedy Policy
-#                 action_index = epsilon_greedy_policy(Q, [num_q_states, num_q_actions], epsilon)
-#
-#                 # Given the action Index find the corresponding action value
-#                 action = action_list[action_index]
-#
-#                 # Given current state, applying current action via SPMe model
-#                 [bat_states, new_sen_states, outputs, sensitivity_outputs, soc_new, V_term, theta, docv_dCse, done] = model.SPMe_step(full_sim=True, states=sim_state, I_input=action)
-#                 # soc_1 = None
-#
-#                 # soc_new = [soc_0, soc_1]
-#
-#                 # Update Model's internal states
-#                 sim_state = [bat_states, new_sen_states]
-#
-#                 # Extract the State of Charge & Epsilon Voltage Sensitivity from states
-#                 state_new = soc_new[0].item()
-#
-#                 eps_sensitivity = sensitivity_outputs["dV_dEpsi_sp"]
-#
-#                 # Discretize the Resulting SOC
-#                 new_state_value, new_state_index = Discretize_Value(state_new, [0, 1], num_q_states)
-#
-#                 # Compute Reward Function
-#                 R = eps_sensitivity**2
-#
-#                 # Update Q-Function
-#                 max_Q = np.max(Q[new_state_index][:])
-#
-#                 Q[state_index][action_index] += alpha*(R + gamma*max_Q - Q[state_index][action_index])
-#
-#                 state_value = new_state_value
-#                 state_index = new_state_index
-#
-#     # np.save("Q_Table", Q)
-#     # print(Q)
 
 def main_optimized():
 
     np.random.seed(0)
 
     # Training Duration Parameters
-    num_episodes = 5000
+    num_episodes = 100000
     episode_duration = 1800
 
     # Initialize Q - Learning Table
@@ -231,7 +164,7 @@ def main_optimized():
     [soc_state_values, soc_state__index, soc_state_dict] = Discretization_Dict([min_state_val, max_state_val], num_q_states)
 
     # Q - Learning Parameters
-    Q = np.zeros([num_q_states , num_q_actions ])
+    Q = np.zeros([num_q_states, num_q_actions])
     alpha = .1
     epsilon = .05
     gamma = .98
@@ -277,7 +210,6 @@ def main_optimized():
 
         # [state_value, state_index] = Discretize_Value(SOC_0[eps], soc_state_values, soc_row, soc_col)
         [state_value, state_index] = Discretize_Value(SOC_0, soc_state_values, soc_row, soc_col)
-
 
         for step in range(1, episode_duration):
             # Select Action According to Epsilon Greedy Policy
@@ -333,7 +265,13 @@ def main_optimized():
 
     print(f"Total Episode Time: {final_time - init_time} ")
 
-    soc_list, action_list = q_learning_policy(Q, num_q_states, num_q_actions, [0,1], [-25.7*3, 25.7*3])
+    soc_range = [0,1]
+    action_range = [-25.7*3, 25.7*3]
+
+    [action_list, soc_list] = q_learning_policy(Q, num_q_states, num_q_actions, [0, 1], [-25.7*3, 25.7*3])
+
+    # print(f"ACTION: {np.shape(action_list)}")
+    # print(f"SOC: {np.shape(soc_list)}")
 
     plt.figure()
     plt.plot(soc_list)
@@ -341,25 +279,7 @@ def main_optimized():
     plt.figure()
     plt.plot(action_list)
     plt.title("Input Current")
-
-    # plt.figure()
-    # plt.plot(voltage_list)
-    # plt.figure()
-    # plt.plot(current_list)
-
-    # % Q;
-    # % final_time = toc(t_init);
-    # [action_list, soc_val_list] = q_learning_policy(Q, num_q_states, num_q_actions, [min_state_val, max_state_val],
-    #                                                 [min_action_val, max_action_val]);
-    #
-    # figure()
-    # plot(action_list)
-    # title("Input Current")
-    # %
-    # figure()
-    # plot(soc_val_list)
-    # title("SOC Output")
-
+    plt.show()
 
 if __name__ == "__main__":
 

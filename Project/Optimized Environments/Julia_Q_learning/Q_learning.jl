@@ -386,7 +386,7 @@ function q_learning_policy(Q_table, num_states, num_actions, state_range, action
 
         state_value = new_state_value
         state_index = new_state_index
-        push!(soc_list, state_value)
+        push!(soc_list, soc)
 
     end
 
@@ -459,10 +459,15 @@ function main_optimized()
 
     SOC_0 =.5*ones(1, num_episodes)
 
+    epsilon_list = LinRange(.6, .01, num_episodes)
+    alpha_list = LinRange(.5, .05, num_episodes)
+
     @showprogress for eps in 1:num_episodes
 
         # mod(eps, 1000) == 0 ? print("Episode # $(eps) \n") : nothing
 
+        epsilon = epsilon_list[eps]
+        alpha = alpha_list[eps]
 
         state_value, state_index = Discretize_Value(SOC_0[eps], soc_state_values, soc_row, soc_col)
 
@@ -549,20 +554,20 @@ end
 @time Q_table, voltage_list = main_optimized()
 # @profile Q_table, voltage_list = main_optimized()
 
-num_states = 250
-num_actions = 11
+num_states = 101
+num_actions = 45
 #
 # heatmap(Q_table)
 
 # plot(voltage_list)
 
-# state_range = [0, 1]
-# action_range = [-25.7*3, 25.7*3]
-#
-# action_list, soc_list = q_learning_policy(Q_table, num_states, num_actions, state_range, action_range)
-#
-# # plot!(action_list, title="Action Titles")
-# plot(soc_list, title="Q-Learning SOC Plot")
+state_range = [0, 1]
+action_range = [-25.7*3, 25.7*3]
+
+action_list, soc_list = q_learning_policy(Q_table, num_states, num_actions, state_range, action_range)
+
+# plot!(action_list, title="Action Titles")
+plot(soc_list, title="Q-Learning SOC Plot")
 
 
 # Juno.profiler()

@@ -145,7 +145,7 @@ Discretization:
 # @profile
 def main():
     num_avg_runs = 1
-    num_episodes = 200000
+    num_episodes = 100000
     episode_duration = 1800
 
     # Initialize Q-Learning Table
