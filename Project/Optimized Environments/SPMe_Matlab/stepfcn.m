@@ -152,7 +152,15 @@ function [Observation,Reward,IsDone,LoggedSignals] = step(Action, LogSig)
             IsDone = soc_new(1) > 1.0 || soc_new(1) <= 0 || V_term < 2.3 || V_term >= 4.5; 
                         
             % Get reward
-            Reward = .5*dV_dEpsi_sp^2;
+%             Reward = .5*dV_dEpsi_sp^2;
+% 
+%             if Reward < 6
+% 
+%                 Reward = -1; 
+%             end 
+
+            Reward = dV_dEpsi_sp^2;
+
             
 end
         

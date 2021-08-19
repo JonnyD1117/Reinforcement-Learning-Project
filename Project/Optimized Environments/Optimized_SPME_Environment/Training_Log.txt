@@ -1,0 +1,8 @@
+#Step = 1000000, EF = 0.5, Training_time 1101.1715002, Max Cum Sen = 65.5119621410294 
+#Step = 1000000, EF = 0.1, Training_time 2263.0314965000002, Max Cum Sen = 66.8729306094103 
+#Step = 3000000, EF = 0.5, Training_time 5597.480999, Max Cum Sen = 70.04876201301761 
+#Step = 3000000, EF = 0.1, Training_time 9156.7875004, Max Cum Sen = 47.71170322610239 
+#Step = 5000000, EF = 0.5, Training_time 14770.5015, Max Cum Sen = 272.39957732240873 
+#Step = 5000000, EF = 0.1, Training_time 20744.4709956, Max Cum Sen = 66.95454510247636 
+#Step = 7000000, EF = 0.5, Training_time 28581.250496200002, Max Cum Sen = 67.69978039644573 
+#Step = 7000000, EF = 0.1, Training_time 36382.0374972, Max Cum Sen = 363.16129637353544 

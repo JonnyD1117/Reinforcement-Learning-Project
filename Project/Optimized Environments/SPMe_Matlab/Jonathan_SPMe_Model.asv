@@ -152,35 +152,35 @@ end
 
 
 
-x1_min = min([min(xn1_list_charge), min(xn1_list_discharge)])
-xn2_min = min([min(xn2_list_charge), min(xn2_list_discharge)])
-xn3_min = min([min(xn3_list_charge), min(xn3_list_discharge)])
+x1_min = min([min(xn1_list_charge), min(xn1_list_discharge)]);
+xn2_min = min([min(xn2_list_charge), min(xn2_list_discharge)]) ;
+xn3_min = min([min(xn3_list_charge), min(xn3_list_discharge)]);
 
-x1_max = max([max(xn1_list_charge), max(xn1_list_discharge)])
-xn2_max = max([max(xn2_list_charge), max(xn2_list_discharge)])
-xn3_max = max([max(xn3_list_charge), max(xn3_list_discharge)])
+x1_max = max([min(xn1_list_charge), min(xn1_list_discharge)]);
+xn2_max = max([min(xn2_list_charge), min(xn2_list_discharge)]) ;
+xn3_max = max([min(xn3_list_charge), min(xn3_list_discharge)]);
 
-xp1_min = min([min(xp1_list_charge), min(xp1_list_discharge)])
-xp2_min = min([min(xp2_list_charge), min(xp2_list_discharge)]) 
-xp3_min = min([min(xp3_list_charge), min(xp3_list_discharge)]) 
+xp1_min = min([min(xp1_list_charge), min(xp1_list_discharge)]);
+xp2_min = min([min(xp2_list_charge), min(xp2_list_discharge)]) ;
+xp3_min = min([min(xp1_list_charge), min(xp3_list_discharge)]) ;
 
-xp1_max = max([max(xp1_list_charge), max(xp1_list_discharge)])
-xp2_max = max([max(xp2_list_charge), max(xp2_list_discharge)]) 
-xp3_max = max([max(xp3_list_charge), max(xp3_list_discharge)]) 
+xp1_max = max([min(xp1_list_charge), min(xp1_list_discharge)]);
+xp2_max = max([min(xp1_list_charge), min(xp1_list_discharge)]) ;
+xp3_max = max([min(xp1_list_charge), min(xp1_list_discharge)]) ;
 
-xe1_min = min([min(xe1_list_charge), min(xe1_list_discharge)]) 
-xe2_min = min([min(xe2_list_charge), min(xe2_list_discharge)]) 
+xe1_min = min() ;
+xe2_min = min() ;
 
-xe1_max = max([max(xe2_list_charge), max(xe2_list_discharge)]) 
-xe2_max = max([max(xe2_list_charge), max(xe2_list_discharge)]) 
+xe1_max = max() ;
+xe2_max = max() ;
 
-Sepsi_p1_min = min([min(Sepsi_p1_list_charge), min(Sepsi_p1_list_discharge)]) 
-Sepsi_p2_min = min([min(Sepsi_p2_list_charge), min(Sepsi_p2_list_discharge)]) 
-Sepsi_p3_min = min([min(Sepsi_p3_list_charge), min(Sepsi_p3_list_discharge)]) 
+Sepsi_p1_min = min() 
+Sepsi_p2_min = min() 
+Sepsi_p3_min = min() 
 
-Sepsi_p1_max = max([max(Sepsi_p1_list_charge), max(Sepsi_p1_list_discharge)]) 
-Sepsi_p2_max = max([max(Sepsi_p2_list_charge), max(Sepsi_p2_list_discharge)]) 
-Sepsi_p3_max = max([max(Sepsi_p3_list_charge), max(Sepsi_p3_list_discharge)]) 
+Sepsi_p1_max = max() 
+Sepsi_p2_max = max() 
+Sepsi_p3_max = max() 
 
 
 

@@ -11,8 +11,8 @@ num_episodes = 300000;
 episode_duration = 1800;
 
 % Initialize Q-Learning Table
-num_q_states = 101;
-num_q_actions = 45;
+num_q_states = 25;
+num_q_actions = 100;
 
 % Discretization Parameters
 max_state_val = 1;
@@ -29,8 +29,8 @@ min_action_val = -25.7*3;
 Q = zeros(num_q_states+1, num_q_actions+1);
 alpha = .1;
 % epsilon = .05;
-% gamma = .98;
-gamma = 1;
+gamma = .98;
+% gamma = 1;
 
 
 % SPMe Initialization Parameters
@@ -52,11 +52,11 @@ current_list = [] ;
 SOC_0 = .5;
 [state_value_0, state_index_0] = Discretize_Value(SOC_0, soc_state_values, soc_row, soc_col);
 
-% epsilon_list = linspace(.6,.01, num_episodes);
-epsilon_list = .6*logspace(0,-10*.25, num_episodes);
+epsilon_list = linspace(.6,.01, num_episodes);
+% epsilon_list = .6*logspace(0,-10*.25, num_episodes);
 
 % alpha_list = linspace(.5, .01, num_episodes);
-% alpha_list = .5*logspace(0,-10*.25, num_episodes);
+alpha_list = .5*logspace(0,-10*.25, num_episodes);
 
 % alpha_list = [linspace(.5, .1, .5*num_episodes), .1*ones(1, .5*num_episodes)]; 
 
@@ -64,7 +64,7 @@ epsilon_list = .6*logspace(0,-10*.25, num_episodes);
     for eps = 1:1:num_episodes
 
         epsilon = epsilon_list(eps);
-%         alpha = alpha_list(eps);
+        alpha = alpha_list(eps);
 
         if mod(eps, 1000) == 0
             disp(eps)
