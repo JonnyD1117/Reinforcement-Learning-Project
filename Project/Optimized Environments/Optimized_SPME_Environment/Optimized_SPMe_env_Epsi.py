@@ -114,7 +114,7 @@ class SPMenv(gym.Env):
     @staticmethod
     def reward_function(sensitivity_value):
 
-        reward = (.5*sensitivity_value)**2
+        reward = (1.0*sensitivity_value)**2
         return reward
 
     def increment_mean(self, new_value, prev_mean, mean_counter):

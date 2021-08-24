@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from stable_baselines3 import PPO, TD3, DQN
 from stable_baselines3.dqn.policies import MlpPolicy
-from Optimized_SPMe_env import SPMenv
+from Optimized_SPMe_env_Dsn import SPMenv
 from time import time_ns
 
 
@@ -16,20 +16,17 @@ if __name__ == '__main__':
 
     init_time = time_ns()
 
-    logging_dir_name = "Opt_SPMe_DQN_"
+    logging_dir_name = "Opt_SPMe_DQN_Dsn"
     trial_name = "T_1_1_1"
 
     env = SPMenv(log_dir=logging_dir_name, log_trial_name=trial_name, log_data=False)
-
-
-
 
     # HyperParameters
     lr = 3e-4
 
     # lr = 0.218
     # ef = 0.6827
-    ef = .6
+    ef = .1
 
     model_name = f"{trial_name}.pt"
     model_path = f"./{logging_dir_name}/model/" + model_name
@@ -41,7 +38,7 @@ if __name__ == '__main__':
     # model = DQN.load(f"./{logging_dir_name}/model/T_2_1_8.pt", env=env)
 
     # Train OR Load Model
-    model.learn(total_timesteps=6000000)
+    model.learn(total_timesteps=2000000)
 
     print(f"total Time Training 1e6 steps: {(time_ns() - init_time)*10**-9}")
 

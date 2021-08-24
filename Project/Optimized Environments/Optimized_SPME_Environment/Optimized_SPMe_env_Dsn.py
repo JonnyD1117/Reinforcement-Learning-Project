@@ -1,4 +1,4 @@
-from Optimized_SPMe_w_Sensitivity_Params import Opt_SPMe_Model
+from Optimized_SPMe_w_Sensitivity_Params_Dsn_model import Opt_SPMe_Model
 import gym
 from gym import error, spaces, utils, logger
 from gym.utils import seeding
@@ -114,7 +114,7 @@ class SPMenv(gym.Env):
     @staticmethod
     def reward_function(sensitivity_value):
 
-        reward = (.5*sensitivity_value)**2
+        reward = (1.0*sensitivity_value)**2
         return reward
 
     def increment_mean(self, new_value, prev_mean, mean_counter):
@@ -149,7 +149,7 @@ class SPMenv(gym.Env):
         self.state_of_charge = soc_new[1].item()        #
         self.state_output = outputs                     #
 
-        self.epsi_sp = sensitivity['dV_dEpsi_sp']       # Set Epsilon Sensitivity
+        self.epsi_sp = sensitivity['dV_dDsp']       # Set Epsilon Sensitivity
 
         self.sen_list.append(self.epsi_sp.item())              #
         self.sen_sqr_list.append(self.epsi_sp**2)       #
